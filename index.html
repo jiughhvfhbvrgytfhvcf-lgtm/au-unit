@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>澳洲专线联盟 | AI-Express 智能物流</title>
+    <style>
+        /* --- 1. 基础样式与大气留白 --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #ffffff;
+            color: #1a1b1e;
+            overflow: hidden;
+        }
+
+        /* --- 2. 顶部导航栏 --- */
+        header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px 40px;
+            align-items: center;
+        }
+        header a {
+            text-decoration: none;
+            color: #5f6368;
+            margin-left: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        header a:hover { color: #002B7F; }
+        
+        .nav-login-btn {
+            background-color: #002B7F;
+            color: #ffffff !important;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- 3. 核心搜索区域 (Google 极简大气风) --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12vh;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 50px;
+            user-select: none;
+        }
+        .logo-main {
+            font-size: 72px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+        }
+        .logo-main .blue { color: #002B7F; }
+        .logo-main .gold { color: #FFCD00; }
+        
+        .logo-sub {
+            font-size: 14px;
+            color: #8c9096;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-top: 5px;
+        }
+
+        /* 搜索框设计 */
+        .search-wrapper {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            height: 54px;
+            border: 1px solid #dfe1e5;
+            border-radius: 27px;
+            padding: 0 55px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .search-input:hover, .search-input:focus {
+            box-shadow: 0 4px 15px rgba(0,43,127,0.1);
+            border-color: rgba(0,43,127,0.15);
+        }
+
+        .btn-group {
+            margin-top: 35px;
+            display: flex;
+            gap: 15px;
+        }
+        .btn-group button {
+            background: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            padding: 10px 24px;
+            border-radius: 6px;
+            color: #3c4043;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-group button:hover {
+            background: #002B7F;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- 4. 登录弹窗 (ERP 对接窗口) --- */
+        #login-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 { margin-bottom: 25px; color: #002B7F; }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+        }
+        .submit-login {
+            width: 100%;
+            padding: 12px;
+            background: #002B7F;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- 5. 页脚 --- */
+        footer {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            font-size: 13px;
+            color: #70757a;
+            border-top: 1px solid #eee;
+        }
+        .footer-top { margin-bottom: 10px; }
+        .footer-links { display: flex; justify-content: space-between; }
+        .footer-links a { color: #70757a; text-decoration: none; margin-right: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#">包裹查询</a>
+        <a href="#">价格预算</a>
+        <a href="javascript:void(0)" class="nav-login-btn" onclick="toggleModal(true)">ERP 登录</a>
+    </header>
+
+    <main>
+        <div class="logo-container">
+            <div class="logo-main">
+                <span class="blue">澳洲</span><span class="gold">专线联盟</span>
+            </div>
+            <div class="logo-sub">AI-EXPRESS ALLIANCE</div>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" class="search-input" placeholder="输入快递单号进行快速追踪..." id="searchBox">
+        </div>
+
+        <div class="btn-group">
+            <button onclick="handleSearch()">联盟搜索</button>
+            <button onclick="location.href='http://121.196.233.99'">进入 ERP 系统</button>
+        </div>
+    </main>
+
+    <div id="login-modal">
+        <div class="modal-content">
+            <h3>ERP 系统登录</h3>
+            <input type="text" id="username" placeholder="账号 / 手机号">
+            <input type="password" id="password" placeholder="密码">
+            <button class="submit-login" onclick="loginToERP()">提交登录</button>
+            <p style="margin-top:15px; font-size:12px; color: #999; cursor:pointer;" onclick="toggleModal(false)">取消返回</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-top">📍 联盟总部：悉尼 | 官方域名：ai-express.cn</div>
+        <div class="footer-links">
+            <div>
+                <a href="#">关于我们</a>
+                <a href="#">合作伙伴</a>
+                <a href="#">服务条款</a>
+            </div>
+            <div>
+                <span>© 2026 AI-Express Alliance</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 控制弹窗开关
+        function toggleModal(show) {
+            document.getElementById('login-modal').style.display = show ? 'flex' : 'none';
+        }
+
+        // 搜索功能跳转到 ERP 查询页
+        function handleSearch() {
+            const val = document.getElementById('searchBox').value;
+            if(val) {
+                // 跳转到 ERP 的查询结果页 (根据你 ERP 的真实路径修改)
+                window.location.href = `http://121.196.233.99/track?no=${val}`;
+            } else {
+                alert('请输入查询单号');
+            }
+        }
+
+        // 对接 ERP 登录逻辑
+        async function loginToERP() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(!user || !pass) return alert('请填入账号密码');
+
+            // 注意：这里是核心对接点。GitHub 是 HTTPS，IP 是 HTTP。
+            // 浏览器会拦截 HTTPS 到 HTTP 的直接 API 请求（Mixed Content）。
+            // 建议：点击登录直接跳转到 ERP 地址并带上参数，或者在 ERP 服务器上配置 SSL。
+            
+            // 方式 A：直接跳转登录
+            window.location.href = `http://121.196.233.99/login?user=${user}&pass=${pass}`;
+            
+            /* 方式 B：Ajax 请求 (需要 ERP 开启 CORS 跨域)
+            try {
+                let response = await fetch('http://121.196.233.99/api/login', {
+                    method: 'POST',
+                    body: JSON.stringify({user, pass})
+                });
+                let data = await response.json();
+                if(data.success) window.location.href = "http://121.196.233.99/home";
+            } catch(e) { console.error("跨域异常", e); }
+            */
+        }
+    </script>
+</body>
+</html>
