@@ -86,10 +86,10 @@
         </div>
 
         <div class="search-wrapper">
-            <input type="text" class="search-input" placeholder="输入入仓号查询轨迹 (如: MY06001294AU3)" id="searchBox" onkeydown="if(event.keyCode==13) handleSearch()">
+            <input type="text" class="search-input" placeholder="输入入仓号直接查询 (如: MY06001294AU3)" id="searchBox" onkeydown="if(event.keyCode==13) handleSearch()">
             <button class="flag-search-btn" onclick="handleSearch()">
                 <div class="flag-image"></div>
-                <div class="search-text">查询</div>
+                <div class="search-text">查询轨迹</div>
             </button>
         </div>
 
@@ -106,16 +106,16 @@
     <footer>📍 联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
 
     <script>
-        // 配置信息 (请在此替换您的网关 Token)
+        // 配置信息
         const GATEWAY_URL = 'ws://182.254.180.143:18888'; 
-        const GATEWAY_TOKEN = '5kDtn4_II-D0k9AaRf1d_0efaB6TqQ27fpLT-Dv1a9c'; // <--- 请修改此处的 Token
+        const GATEWAY_TOKEN = '5kDtn4_II-D0k9AaRf1d_0efaB6TqQ27fpLT-Dv1a9c'; //
 
-        // 1. ERP 登录跳转逻辑：直接跳转至指定 IP 地址
+        // 1. ERP 登录直达逻辑
         function loginToERP() {
-            window.location.href = 'http://121.196.233.99';
+            window.location.href = 'http://121.196.233.99'; //
         }
 
-        // 2. 轨迹查询逻辑：连接 OpenClaw 网关
+        // 2. 轨迹查询逻辑
         async function handleSearch() {
             const inputVal = document.getElementById('searchBox').value.trim();
             const loading = document.getElementById('loading');
@@ -134,7 +134,11 @@
                 const payload = {
                     token: GATEWAY_TOKEN,
                     method: 'agent',
-                    params: { agentId: 'main', message: `轨迹${inputVal}` } // 发送“轨迹+入仓号”
+                    params: { 
+                        agentId: 'main', 
+                        // 在后台自动为入仓号加上“轨迹”前缀发送
+                        message: `轨迹${inputVal}` 
+                    }
                 };
                 ws.send(JSON.stringify(payload));
             };
@@ -151,15 +155,14 @@
 
             ws.onerror = () => {
                 loading.style.display = 'none';
-                alert('连接腾讯云网关失败，请检查端口是否开放');
+                alert('连接网关失败。提示：HTTPS网站连接WS可能被拦截，请确认网关是否支持WSS');
                 ws.close();
             };
         }
 
-        // 3. 轨迹排版逻辑：将文本解析为时间轴
+        // 3. 轨迹排版渲染逻辑
         function parseAndRender(rawText) {
             const list = document.getElementById('track-list');
-            // 筛选符合轨迹格式的行 (包含“- 20”开头的行)
             const lines = rawText.split('\n').filter(l => l.includes('- 20'));
             
             if (lines.length === 0) {
