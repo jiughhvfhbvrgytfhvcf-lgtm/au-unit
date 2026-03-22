@@ -175,72 +175,84 @@
       color: #7b8397;
       line-height: 1.6;
     }
-    .schedule-rail-wrap {
+    .schedule-stage-wrap {
       overflow-x: auto;
-      margin: 20px -6px 0;
+      margin: 22px -6px 0;
       padding: 0 6px 6px;
     }
-    .schedule-rail {
+    .schedule-stage-grid {
       position: relative;
-      min-width: 880px;
+      min-width: 760px;
       display: grid;
-      grid-template-columns: repeat(7, minmax(110px, 1fr));
-      gap: 10px;
-      padding: 16px 8px 4px;
+      grid-template-columns: repeat(6, minmax(108px, 1fr));
+      gap: 14px;
+      padding: 8px 8px 4px;
     }
-    .schedule-rail::before {
+    .schedule-stage-grid::before {
       content: "";
       position: absolute;
-      left: 72px;
-      right: 72px;
-      top: 32px;
+      left: 68px;
+      right: 68px;
+      top: 38px;
       height: 6px;
       border-radius: 999px;
       background: #dbe3ea;
     }
-    .schedule-progress {
+    .schedule-stage-progress {
       position: absolute;
-      left: 72px;
-      top: 32px;
+      left: 68px;
+      top: 38px;
       height: 6px;
       border-radius: 999px;
       background: linear-gradient(90deg, #19b96b 0%, #0fa85f 100%);
       width: 0;
     }
-    .schedule-step {
+    .schedule-stage {
       position: relative;
       z-index: 1;
       text-align: center;
     }
-    .schedule-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      margin: 0 auto 10px;
-      border: 4px solid #fff;
+    .schedule-stage-card {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px;
+      border-radius: 22px;
+      background: #f1f4f8;
+      border: 1px solid rgba(0, 43, 127, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 22px rgba(19, 29, 58, 0.06);
+    }
+    .schedule-stage-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
       background: #d6dde4;
-      box-shadow: 0 0 0 1px rgba(0, 43, 127, 0.08);
-    }
-    .schedule-step.is-done .schedule-dot {
-      background: #10b067;
-      box-shadow: 0 0 0 6px rgba(16, 176, 103, 0.14);
-    }
-    .schedule-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #1a2235;
-      line-height: 1.5;
-    }
-    .schedule-date {
-      margin-top: 6px;
-      font-size: 12px;
       color: #7b8397;
-      min-height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      line-height: 1;
+    }
+    .schedule-stage-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #5f6880;
       line-height: 1.5;
     }
-    .schedule-step.is-done .schedule-date {
+    .schedule-stage.is-done .schedule-stage-card {
+      background: #effaf4;
+      border-color: rgba(16, 176, 103, 0.16);
+    }
+    .schedule-stage.is-done .schedule-stage-icon {
+      background: #10b067;
+      color: #fff;
+      box-shadow: 0 0 0 8px rgba(16, 176, 103, 0.12);
+    }
+    .schedule-stage.is-done .schedule-stage-label {
       color: #0d8f55;
-      font-weight: 700;
     }
     .schedule-table-wrap {
       overflow-x: auto;
@@ -248,22 +260,23 @@
     }
     .schedule-table {
       width: 100%;
-      min-width: 880px;
+      min-width: 760px;
       border-collapse: collapse;
       overflow: hidden;
       border-radius: 18px;
     }
     .schedule-table th {
-      background: #11aa67;
-      color: #fff;
+      background: #f3f6fb;
+      color: #4c556b;
       padding: 14px 12px;
       font-size: 13px;
       font-weight: 700;
       white-space: nowrap;
-      border-right: 1px solid rgba(255, 255, 255, 0.24);
+      border: 1px solid #e4ebf3;
+      text-align: center;
     }
-    .schedule-table th:last-child {
-      border-right: none;
+    .schedule-table th:first-child {
+      min-width: 92px;
     }
     .schedule-table td {
       padding: 14px 12px;
@@ -272,6 +285,12 @@
       font-size: 14px;
       color: #1a2235;
       white-space: nowrap;
+      background: #f6f8fb;
+    }
+    .schedule-table td.is-done {
+      background: #eefaf4;
+      color: #0d8f55;
+      font-weight: 700;
     }
     .schedule-missing {
       color: #99a3b3;
@@ -387,7 +406,6 @@
           <span>查询</span>
         </button>
       </div>
-      <div class="hint">查询会通过腾讯云安全入口转发，不再直接暴露网关 token。</div>
       <div id="loading">正在从腾讯云调取轨迹信息，请稍候...</div>
       <div id="errorBox" class="error-box"></div>
     </section>
@@ -398,17 +416,12 @@
           <h4>计划时间轴</h4>
           <p id="schedule-summary">根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。</p>
         </div>
-        <div class="schedule-rail-wrap">
-          <div id="schedule-rail" class="schedule-rail"></div>
+        <div class="schedule-stage-wrap">
+          <div id="schedule-stage-grid" class="schedule-stage-grid"></div>
         </div>
         <div class="schedule-table-wrap">
           <table class="schedule-table">
-            <thead>
-              <tr id="schedule-table-head"></tr>
-            </thead>
-            <tbody>
-              <tr id="schedule-table-body"></tr>
-            </tbody>
+            <tbody id="schedule-table-body"></tbody>
           </table>
         </div>
       </div>
@@ -434,21 +447,19 @@
     const errorBox = document.getElementById("errorBox");
     const resultContainer = document.getElementById("result-container");
     const scheduleSection = document.getElementById("schedule-section");
-    const scheduleRail = document.getElementById("schedule-rail");
+    const scheduleStageGrid = document.getElementById("schedule-stage-grid");
     const scheduleSummary = document.getElementById("schedule-summary");
-    const scheduleTableHead = document.getElementById("schedule-table-head");
     const scheduleTableBody = document.getElementById("schedule-table-body");
     const trackList = document.getElementById("track-list");
     const resTitle = document.getElementById("res-title");
     const resSummary = document.getElementById("res-summary");
     const SCHEDULE_STEPS = [
-      { key: "plannedLoadDate", label: "计划装柜", actual: false },
-      { key: "plannedDepartureDate", label: "计划离港", actual: false },
-      { key: "plannedArrivalDate", label: "计划到港", actual: false },
-      { key: "actualDepartureDate", label: "实际离港", actual: true },
-      { key: "actualArrivalDate", label: "实际到港", actual: true },
-      { key: "plannedPickupDate", label: "计划提柜", actual: false },
-      { key: "plannedUnpackDate", label: "计划拆柜", actual: false }
+      { key: "load", label: "装柜", icon: "&#128230;", plannedKey: "plannedLoadDate", actualKey: "actualLoadDate" },
+      { key: "departure", label: "离港", icon: "&#9992;&#65039;", plannedKey: "plannedDepartureDate", actualKey: "actualDepartureDate" },
+      { key: "arrival", label: "到港", icon: "&#128748;", plannedKey: "plannedArrivalDate", actualKey: "actualArrivalDate" },
+      { key: "pickup", label: "提柜", icon: "&#128666;", plannedKey: "plannedPickupDate", actualKey: "actualPickupDate" },
+      { key: "unpack", label: "拆柜", icon: "&#128736;&#65039;", plannedKey: "plannedUnpackDate", actualKey: "actualUnpackDate" },
+      { key: "delivery", label: "派送", icon: "&#9989;", plannedKey: "plannedDeliveryDate", actualKey: "actualDeliveryDate" }
     ];
 
     searchBox.addEventListener("keydown", (event) => {
@@ -478,8 +489,7 @@
 
     function hideSchedule() {
       scheduleSection.style.display = "none";
-      scheduleRail.innerHTML = "";
-      scheduleTableHead.innerHTML = "";
+      scheduleStageGrid.innerHTML = "";
       scheduleTableBody.innerHTML = "";
       scheduleSummary.textContent = "根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。";
     }
@@ -524,14 +534,30 @@
         "计划进仓日期": "planJoinDate",
         "计划入仓日期": "planJoinDate",
         "计划装柜日期": "plannedLoadDate",
+        "实际装柜日期": "actualLoadDate",
+        "实际装柜时间": "actualLoadDate",
         "计划离港日期": "plannedDepartureDate",
         "计划到港日期": "plannedArrivalDate",
         "实际离港日期": "actualDepartureDate",
         "实际到港日期": "actualArrivalDate",
+        "计划提货日期": "plannedPickupDate",
+        "计划提货时间": "plannedPickupDate",
         "计划提柜日期": "plannedPickupDate",
         "计划提柜时间": "plannedPickupDate",
+        "实际提货日期": "actualPickupDate",
+        "实际提货时间": "actualPickupDate",
+        "实际提柜日期": "actualPickupDate",
+        "实际提柜时间": "actualPickupDate",
+        "实际拆柜日期": "actualUnpackDate",
+        "实际拆柜时间": "actualUnpackDate",
         "计划拆柜日期": "plannedUnpackDate",
-        "计划拆柜时间": "plannedUnpackDate"
+        "计划拆柜时间": "plannedUnpackDate",
+        "计划派送日期": "plannedDeliveryDate",
+        "计划派送时间": "plannedDeliveryDate",
+        "实际派送日期": "actualDeliveryDate",
+        "实际派送时间": "actualDeliveryDate",
+        "实际签收日期": "actualDeliveryDate",
+        "实际签收时间": "actualDeliveryDate"
       };
       const lines = String(replyText || "").split("\n");
       for (const line of lines) {
@@ -565,41 +591,59 @@
         ? payload.planSchedule
         : {};
       const fallback = parseScheduleFromReplyText(payload?.replyText || "");
-      const milestones = SCHEDULE_STEPS.map((step) => {
-        const date = normalizeDateText(
+      const stages = SCHEDULE_STEPS.map((step) => {
+        const plannedDate = normalizeDateText(
           pickText(
-            apiSchedule[step.key],
-            fallback[step.key],
+            apiSchedule[step.plannedKey],
+            fallback[step.plannedKey],
             Array.isArray(apiSchedule.milestones)
-              ? apiSchedule.milestones.find((item) => item?.key === step.key)?.date
+              ? apiSchedule.milestones.find((item) => item?.key === step.plannedKey)?.date
               : ""
           )
         );
-        return { ...step, date };
+        const actualDate = normalizeDateText(
+          pickText(
+            apiSchedule[step.actualKey],
+            fallback[step.actualKey],
+            Array.isArray(apiSchedule.milestones)
+              ? apiSchedule.milestones.find((item) => item?.key === step.actualKey)?.date
+              : ""
+          )
+        );
+        return { ...step, plannedDate, actualDate };
       });
       return {
         crowdfundCode: pickText(apiSchedule.crowdfundCode, fallback.crowdfundCode),
         crowdfundName: pickText(apiSchedule.crowdfundName, fallback.crowdfundName),
         planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
-        milestones,
-        hasAnyDate: milestones.some((item) => item.date)
+        stages,
+        hasAnyDate: stages.some((item) => item.plannedDate || item.actualDate)
       };
     }
 
-    function isMilestoneDone(item) {
-      if (!item?.date) {
-        return false;
-      }
-      if (item.actual) {
+    function isScheduleStageDone(item) {
+      if (item?.actualDate) {
         return true;
       }
-      const probe = new Date(`${item.date}T00:00:00`);
+      if (!item?.plannedDate) {
+        return false;
+      }
+      const probe = new Date(`${item.plannedDate}T00:00:00`);
       if (Number.isNaN(probe.getTime())) {
         return false;
       }
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return probe.getTime() <= today.getTime();
+    }
+
+    function formatDisplayDate(value) {
+      const text = normalizeDateText(value);
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) {
+        return text;
+      }
+      return `${Number(match[2])}月${Number(match[3])}日`;
     }
 
     function renderSchedule(payload) {
@@ -609,32 +653,45 @@
         return;
       }
 
-      const milestones = schedule.milestones.map((item) => ({
+      const stages = schedule.stages.map((item) => ({
         ...item,
-        done: isMilestoneDone(item)
+        done: isScheduleStageDone(item)
       }));
-      const lastDoneIndex = milestones.reduce((acc, item, index) => (item.done ? index : acc), -1);
+      const lastDoneIndex = stages.reduce((acc, item, index) => (item.done ? index : acc), -1);
       const progressPercent = lastDoneIndex < 0
         ? 0
-        : (lastDoneIndex / Math.max(1, milestones.length - 1)) * 100;
+        : (lastDoneIndex / Math.max(1, stages.length - 1)) * 100;
 
-      scheduleRail.innerHTML = `
-        <div class="schedule-progress" style="width:${progressPercent}%;"></div>
-        ${milestones.map((item) => `
-          <div class="schedule-step ${item.done ? "is-done" : ""}">
-            <div class="schedule-dot"></div>
-            <div class="schedule-label">${escapeHtml(item.label)}</div>
-            <div class="schedule-date">${escapeHtml(item.date || "待更新")}</div>
+      scheduleStageGrid.innerHTML = `
+        <div class="schedule-stage-progress" style="width:${progressPercent}%;"></div>
+        ${stages.map((item) => `
+          <div class="schedule-stage ${item.done ? "is-done" : ""}">
+            <div class="schedule-stage-card">
+              <div class="schedule-stage-icon">${item.icon}</div>
+            </div>
+            <div class="schedule-stage-label">${escapeHtml(item.label)}</div>
           </div>
         `).join("")}
       `;
 
-      scheduleTableHead.innerHTML = milestones
-        .map((item) => `<th>${escapeHtml(item.label)}</th>`)
-        .join("");
-      scheduleTableBody.innerHTML = milestones
-        .map((item) => `<td>${item.date ? escapeHtml(item.date) : '<span class="schedule-missing">待更新</span>'}</td>`)
-        .join("");
+      scheduleTableBody.innerHTML = `
+        <tr>
+          <th>计划时间</th>
+          ${stages.map((item) => `
+            <td class="${item.done ? "is-done" : ""}">
+              ${item.plannedDate ? escapeHtml(formatDisplayDate(item.plannedDate)) : '<span class="schedule-missing">待更新</span>'}
+            </td>
+          `).join("")}
+        </tr>
+        <tr>
+          <th>实际时间</th>
+          ${stages.map((item) => `
+            <td class="${item.actualDate ? "is-done" : ""}">
+              ${item.actualDate ? escapeHtml(formatDisplayDate(item.actualDate)) : '<span class="schedule-missing">待更新</span>'}
+            </td>
+          `).join("")}
+        </tr>
+      `;
 
       const summaryParts = [];
       if (schedule.crowdfundCode) {
