@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>澳洲专线联盟 | AI-Express 智能物流</title>
     <style>
-        /* --- 1. 基础样式与大气留白 --- */
+        /* --- 1. 基础样式 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -43,22 +43,22 @@
             cursor: pointer;
         }
 
-        /* --- 3. 核心搜索区域 (Google 极简大气风) --- */
+        /* --- 3. 核心搜索区域 --- */
         main {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 12vh;
+            padding-top: 15vh;
         }
 
         .logo-container {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             user-select: none;
         }
         .logo-main {
-            font-size: 72px;
+            font-size: 64px;
             font-weight: 700;
             letter-spacing: -1.5px;
         }
@@ -73,50 +73,69 @@
             margin-top: 5px;
         }
 
-        /* 搜索框设计 */
+        /* 搜索框与复合按钮整合 */
         .search-wrapper {
-            width: 100%;
+            width: 90%;
             max-width: 600px;
             position: relative;
+            display: flex;
+            align-items: center;
         }
         .search-input {
             width: 100%;
-            height: 54px;
+            height: 56px;
             border: 1px solid #dfe1e5;
-            border-radius: 27px;
-            padding: 0 55px;
+            border-radius: 28px;
+            padding: 0 120px 0 25px; /* 为右侧按钮留足空间 */
             font-size: 16px;
             outline: none;
             transition: all 0.3s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
         }
-        .search-input:hover, .search-input:focus {
-            box-shadow: 0 4px 15px rgba(0,43,127,0.1);
-            border-color: rgba(0,43,127,0.15);
+        .search-input:focus {
+            box-shadow: 0 4px 18px rgba(0,43,127,0.12);
+            border-color: rgba(0,43,127,0.2);
         }
 
-        .btn-group {
-            margin-top: 35px;
-            display: flex;
-            gap: 15px;
-        }
-        .btn-group button {
-            background: #f8f9fa;
-            border: 1px solid #f8f9fa;
-            padding: 10px 24px;
-            border-radius: 6px;
-            color: #3c4043;
-            font-size: 14px;
+        /* 复合式国旗查询按钮 */
+        .flag-search-btn {
+            position: absolute;
+            right: 7px;
+            height: 42px;
+            border: none;
+            border-radius: 21px;
             cursor: pointer;
+            background-color: #f0f4ff; /* 浅蓝色背景，暗示可点击 */
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
             transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,43,127,0.1);
         }
-        .btn-group button:hover {
-            background: #002B7F;
-            color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .flag-search-btn:hover {
+            background-color: #002B7F;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,43,127,0.2);
+        }
+        .flag-search-btn:hover .search-text {
+            color: #ffffff;
+        }
+        .flag-image {
+            width: 24px;
+            height: 16px;
+            background-image: url('https://flagcdn.com/w80/au.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        .search-text {
+            font-size: 14px;
+            color: #002B7F;
+            font-weight: 600;
         }
 
-        /* --- 4. 登录弹窗 (ERP 对接窗口) --- */
+        /* --- 4. 登录弹窗 --- */
         #login-modal {
             display: none;
             position: fixed;
@@ -132,16 +151,13 @@
             border-radius: 12px;
             width: 360px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .modal-content h3 { margin-bottom: 25px; color: #002B7F; }
         .modal-content input {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            outline: none;
         }
         .submit-login {
             width: 100%;
@@ -162,7 +178,6 @@
             color: #70757a;
             border-top: 1px solid #eee;
         }
-        .footer-top { margin-bottom: 10px; }
         .footer-links { display: flex; justify-content: space-between; }
         .footer-links a { color: #70757a; text-decoration: none; margin-right: 20px; }
     </style>
@@ -184,18 +199,17 @@
         </div>
 
         <div class="search-wrapper">
-            <input type="text" class="search-input" placeholder="输入快递单号进行快速追踪..." id="searchBox">
-        </div>
-
-        <div class="btn-group">
-            <button onclick="handleSearch()">联盟搜索</button>
-            <button onclick="location.href='http://121.196.233.99'">进入 ERP 系统</button>
+            <input type="text" class="search-input" placeholder="输入快递单号进行快速追踪..." id="searchBox" onkeydown="if(event.keyCode==13) handleSearch()">
+            <button class="flag-search-btn" title="点击进行查询" onclick="handleSearch()">
+                <div class="flag-image"></div>
+                <div class="search-text">查询</div>
+            </button>
         </div>
     </main>
 
     <div id="login-modal">
         <div class="modal-content">
-            <h3>ERP 系统登录</h3>
+            <h3 style="margin-bottom:20px; color:#002B7F;">ERP 系统登录</h3>
             <input type="text" id="username" placeholder="账号 / 手机号">
             <input type="password" id="password" placeholder="密码">
             <button class="submit-login" onclick="loginToERP()">提交登录</button>
@@ -204,12 +218,11 @@
     </div>
 
     <footer>
-        <div class="footer-top">📍 联盟总部：悉尼 | 官方域名：ai-express.cn</div>
+        <div class="footer-top" style="margin-bottom: 10px;">📍 联盟总部：悉尼 | 官方域名：ai-express.cn</div>
         <div class="footer-links">
             <div>
                 <a href="#">关于我们</a>
                 <a href="#">合作伙伴</a>
-                <a href="#">服务条款</a>
             </div>
             <div>
                 <span>© 2026 AI-Express Alliance</span>
@@ -218,46 +231,24 @@
     </footer>
 
     <script>
-        // 控制弹窗开关
         function toggleModal(show) {
             document.getElementById('login-modal').style.display = show ? 'flex' : 'none';
         }
 
-        // 搜索功能跳转到 ERP 查询页
         function handleSearch() {
             const val = document.getElementById('searchBox').value;
             if(val) {
-                // 跳转到 ERP 的查询结果页 (根据你 ERP 的真实路径修改)
                 window.location.href = `http://121.196.233.99/track?no=${val}`;
             } else {
                 alert('请输入查询单号');
             }
         }
 
-        // 对接 ERP 登录逻辑
-        async function loginToERP() {
+        function loginToERP() {
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
-
             if(!user || !pass) return alert('请填入账号密码');
-
-            // 注意：这里是核心对接点。GitHub 是 HTTPS，IP 是 HTTP。
-            // 浏览器会拦截 HTTPS 到 HTTP 的直接 API 请求（Mixed Content）。
-            // 建议：点击登录直接跳转到 ERP 地址并带上参数，或者在 ERP 服务器上配置 SSL。
-            
-            // 方式 A：直接跳转登录
             window.location.href = `http://121.196.233.99/login?user=${user}&pass=${pass}`;
-            
-            /* 方式 B：Ajax 请求 (需要 ERP 开启 CORS 跨域)
-            try {
-                let response = await fetch('http://121.196.233.99/api/login', {
-                    method: 'POST',
-                    body: JSON.stringify({user, pass})
-                });
-                let data = await response.json();
-                if(data.success) window.location.href = "http://121.196.233.99/home";
-            } catch(e) { console.error("跨域异常", e); }
-            */
         }
     </script>
 </body>
