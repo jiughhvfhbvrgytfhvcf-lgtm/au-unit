@@ -37,7 +37,7 @@
       box-shadow: 0 12px 30px rgba(0, 43, 127, 0.16);
     }
     main {
-      width: min(1040px, calc(100vw - 32px));
+      width: min(1120px, calc(100vw - 32px));
       margin: 0 auto;
       flex: 1;
       display: flex;
@@ -176,32 +176,53 @@
     .schedule-board {
       position: relative;
       display: grid;
-      grid-template-columns: 110px repeat(6, minmax(0, 1fr));
+      grid-template-columns: 96px repeat(7, minmax(0, 1fr));
       column-gap: 10px;
       row-gap: 12px;
       align-items: start;
       width: 100%;
     }
-    .schedule-board-track {
-      grid-column: 2 / span 6;
-      grid-row: 1;
-      align-self: start;
-      margin-top: 32px;
+    .schedule-segment {
+      position: relative;
+      z-index: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 56px;
+      pointer-events: none;
+    }
+    .schedule-segment-label {
+      min-height: 20px;
+      margin-bottom: 8px;
+      padding: 2px 6px;
+      color: #7b8397;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .schedule-segment-line {
+      width: calc(100% - 34px);
       height: 6px;
       border-radius: 999px;
       background: #dbe3ea;
-      position: relative;
-      z-index: 0;
     }
-    .schedule-board-track-progress {
-      height: 100%;
-      border-radius: 999px;
+    .schedule-segment.is-done .schedule-segment-line {
       background: linear-gradient(90deg, #19b96b 0%, #0fa85f 100%);
-      width: 0;
     }
-    .schedule-board-spacer {
-      grid-column: 1;
-      grid-row: 1;
+    .schedule-segment-tone {
+      color: #7b8397;
+    }
+    .schedule-segment-tone.is-positive {
+      color: #0d8f55;
+    }
+    .schedule-segment-tone.is-negative {
+      color: #cf3f36;
+    }
+    .schedule-segment-divider {
+      color: #99a3b3;
     }
     .schedule-stage {
       position: relative;
@@ -367,12 +388,17 @@
         padding: 0 12px;
       }
       .schedule-board {
-        grid-template-columns: 64px repeat(6, minmax(0, 1fr));
+        grid-template-columns: 58px repeat(7, minmax(0, 1fr));
         column-gap: 6px;
         row-gap: 8px;
       }
-      .schedule-board-track {
-        margin-top: 22px;
+      .schedule-segment {
+        min-height: 44px;
+      }
+      .schedule-segment-label {
+        min-height: 16px;
+        margin-bottom: 6px;
+        font-size: 9px;
       }
       .schedule-stage-card {
         width: 42px;
@@ -432,9 +458,6 @@
 
     <section id="result-container">
       <div id="schedule-section" class="result-card schedule-panel" style="display:none;">
-        <div class="schedule-head">
-          <h4>计划时间轴</h4>
-        </div>
         <div class="schedule-board-wrap">
           <div id="schedule-board" class="schedule-board"></div>
         </div>
@@ -466,12 +489,21 @@
     const resTitle = document.getElementById("res-title");
     const resSummary = document.getElementById("res-summary");
     const SCHEDULE_STEPS = [
+      { key: "warehousing", label: "入库", icon: "&#127970;", plannedKey: "planJoinDate", actualKey: "actualJoinDate" },
       { key: "load", label: "装柜", icon: "&#128230;", plannedKey: "plannedLoadDate", actualKey: "actualLoadDate" },
       { key: "departure", label: "离港", icon: "&#9992;&#65039;", plannedKey: "plannedDepartureDate", actualKey: "actualDepartureDate" },
       { key: "arrival", label: "到港", icon: "&#128748;", plannedKey: "plannedArrivalDate", actualKey: "actualArrivalDate" },
       { key: "pickup", label: "提柜", icon: "&#128666;", plannedKey: "plannedPickupDate", actualKey: "actualPickupDate" },
       { key: "unpack", label: "拆柜", icon: "&#128736;&#65039;", plannedKey: "plannedUnpackDate", actualKey: "actualUnpackDate" },
       { key: "delivery", label: "派送", icon: "&#9989;", plannedKey: "plannedDeliveryDate", actualKey: "actualDeliveryDate" }
+    ];
+    const SCHEDULE_SEGMENTS = [
+      { from: "warehousing", to: "load", defaultLabel: "" },
+      { from: "load", to: "departure", defaultLabel: "报关放行 / 报关未放行", statusKey: "customsStatus" },
+      { from: "departure", to: "arrival", defaultLabel: "held / clean", statusKey: "voyageStatus" },
+      { from: "arrival", to: "pickup", defaultLabel: "" },
+      { from: "pickup", to: "unpack", defaultLabel: "" },
+      { from: "unpack", to: "delivery", defaultLabel: "" }
     ];
 
     searchBox.addEventListener("keydown", (event) => {
@@ -543,6 +575,10 @@
         "众筹柜名称": "crowdfundName",
         "计划进仓日期": "planJoinDate",
         "计划入仓日期": "planJoinDate",
+        "实际进仓日期": "actualJoinDate",
+        "实际进仓时间": "actualJoinDate",
+        "实际入仓日期": "actualJoinDate",
+        "实际入仓时间": "actualJoinDate",
         "计划装柜日期": "plannedLoadDate",
         "实际装柜日期": "actualLoadDate",
         "实际装柜时间": "actualLoadDate",
@@ -567,7 +603,11 @@
         "实际派送日期": "actualDeliveryDate",
         "实际派送时间": "actualDeliveryDate",
         "实际签收日期": "actualDeliveryDate",
-        "实际签收时间": "actualDeliveryDate"
+        "实际签收时间": "actualDeliveryDate",
+        "报关状态": "customsStatus",
+        "报关放行状态": "customsStatus",
+        "航程状态": "voyageStatus",
+        "海运状态": "voyageStatus"
       };
       const lines = String(replyText || "").split("\n");
       for (const line of lines) {
@@ -579,7 +619,7 @@
         if (!key) {
           continue;
         }
-        result[key] = key === "crowdfundCode" || key === "crowdfundName"
+        result[key] = key === "crowdfundCode" || key === "crowdfundName" || key === "customsStatus" || key === "voyageStatus"
           ? match[2].trim()
           : normalizeDateText(match[2]);
       }
@@ -626,6 +666,8 @@
         crowdfundCode: pickText(apiSchedule.crowdfundCode, fallback.crowdfundCode),
         crowdfundName: pickText(apiSchedule.crowdfundName, fallback.crowdfundName),
         planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
+        customsStatus: pickText(apiSchedule.customsStatus, fallback.customsStatus),
+        voyageStatus: pickText(apiSchedule.voyageStatus, fallback.voyageStatus),
         stages,
         hasAnyDate: stages.some((item) => item.plannedDate || item.actualDate)
       };
@@ -656,6 +698,36 @@
       return `${Number(match[2])}月${Number(match[3])}日`;
     }
 
+    function getSegmentTone(labelPart) {
+      const text = String(labelPart || "").trim().toLowerCase();
+      if (!text) {
+        return "";
+      }
+      if (text.includes("未放行") || text.includes("held")) {
+        return "is-negative";
+      }
+      if (text.includes("已放行") || text.includes("clean")) {
+        return "is-positive";
+      }
+      return "";
+    }
+
+    function renderSegmentLabelHtml(label) {
+      const text = String(label || "").trim();
+      if (!text) {
+        return "&nbsp;";
+      }
+      const parts = text.split("/").map((part) => part.trim()).filter(Boolean);
+      if (!parts.length) {
+        return "&nbsp;";
+      }
+      return parts.map((part, index) => {
+        const className = getSegmentTone(part);
+        const divider = index === 0 ? "" : '<span class="schedule-segment-divider"> / </span>';
+        return `${divider}<span class="schedule-segment-tone ${className}">${escapeHtml(part)}</span>`;
+      }).join("");
+    }
+
     function renderSchedule(payload) {
       const schedule = buildScheduleView(payload);
       if (!schedule.hasAnyDate) {
@@ -667,16 +739,28 @@
         ...item,
         done: isScheduleStageDone(item)
       }));
-      const lastDoneIndex = stages.reduce((acc, item, index) => (item.done ? index : acc), -1);
-      const progressPercent = lastDoneIndex < 0
-        ? 0
-        : (lastDoneIndex / Math.max(1, stages.length - 1)) * 100;
+      const segments = SCHEDULE_SEGMENTS.map((segment) => {
+        const toStageIndex = stages.findIndex((item) => item.key === segment.to);
+        const label = segment.statusKey === "customsStatus"
+          ? (schedule.customsStatus || segment.defaultLabel)
+          : segment.statusKey === "voyageStatus"
+            ? (schedule.voyageStatus || segment.defaultLabel)
+            : segment.defaultLabel;
+        return {
+          ...segment,
+          label,
+          done: toStageIndex >= 0 ? stages[toStageIndex].done : false
+        };
+      });
 
       scheduleBoard.innerHTML = `
-        <div class="schedule-board-track">
-          <div class="schedule-board-track-progress" style="width:${progressPercent}%;"></div>
-        </div>
-        <div class="schedule-board-spacer"></div>
+        <div style="grid-column:1; grid-row:1;"></div>
+        ${segments.map((segment, index) => `
+          <div class="schedule-segment ${segment.done ? "is-done" : ""}" style="grid-column:${index + 2} / span 2; grid-row:1;">
+            <div class="schedule-segment-label">${renderSegmentLabelHtml(segment.label)}</div>
+            <div class="schedule-segment-line"></div>
+          </div>
+        `).join("")}
         ${stages.map((item, index) => `
           <div class="schedule-stage ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:2;">
             <div class="schedule-stage-card">
