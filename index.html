@@ -46,11 +46,11 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- 2. 新增：AI 机器人样式 --- */
-        .ai-widget { position: fixed; right: 30px; bottom: 30px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; }
+        .ai-widget { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 9999; display: flex; flex-direction: row-reverse; align-items: center; gap: 14px; }
         .ai-button { width: 60px; height: 60px; border-radius: 30px; background: #107df1; box-shadow: 0 4px 15px rgba(16, 125, 241, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
         .ai-button:hover { transform: scale(1.1); }
         .ai-button svg { width: 28px; height: 28px; fill: white; }
-        .ai-panel { width: 350px; height: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 15px; display: none; flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease-out; }
+        .ai-panel { width: 360px; height: 540px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .ai-header { background: #107df1; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #f7f9fc; font-size: 14px; display: flex; flex-direction: column; }
@@ -60,6 +60,10 @@
         .msg { margin-bottom: 12px; max-width: 85%; padding: 10px; border-radius: 10px; line-height: 1.5; word-wrap: break-word; }
         .msg-ai { background: white; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .msg-user { background: #107df1; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        @media (max-width: 768px) {
+            .ai-widget { right: 20px; bottom: 20px; top: auto; transform: none; flex-direction: column; align-items: flex-end; gap: 12px; }
+            .ai-panel { width: min(92vw, 360px); height: min(70vh, 540px); }
+        }
     </style>
 </head>
 <body>
@@ -98,7 +102,7 @@
                 <span style="cursor:pointer" onclick="toggleChat()">✕</span>
             </div>
             <div class="ai-body" id="chatBody">
-                <div class="msg msg-ai">您好！我是澳洲专线联盟的 AI 助手，有什么可以帮您？</div>
+                <div class="msg msg-ai">您好！我是澳洲专线联盟官网客服。查轨迹建议直接用上方查询框；如果要问运费、报价、ERP、POD、发票，也可以直接问我。</div>
             </div>
             <div class="ai-footer">
                 <input type="text" class="ai-input" id="aiInput" placeholder="输入问题..." onkeydown="if(event.key==='Enter') sendToAI()">
