@@ -1,282 +1,697 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>澳洲专线联盟 | AI-Express 智能物流</title>
-    <style>
-        /* --- 1. 您原有的样式 (完全保留) --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            display: flex; flex-direction: column; min-height: 100vh;
-            background: #ffffff; color: #1a1b1e;
-        }
-        header { display: flex; justify-content: flex-end; padding: 20px 40px; align-items: center; }
-        header a { text-decoration: none; color: #5f6368; margin-left: 25px; font-size: 14px; font-weight: 500; }
-        .nav-login-btn { background-color: #002b7f; color: #ffffff !important; padding: 8px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 10vh; padding-bottom: 50px; }
-        .logo-container { text-align: center; margin-bottom: 40px; }
-        .logo-main { font-size: 64px; font-weight: 700; letter-spacing: -1.5px; }
-        .logo-main .blue { color: #002b7f; }
-        .logo-main .gold { color: #ffcd00; }
-        .logo-sub { font-size: 14px; color: #8c9096; text-transform: uppercase; letter-spacing: 6px; margin-top: 5px; }
-        .search-wrapper { width: 90%; max-width: 600px; position: relative; display: flex; align-items: center; }
-        .search-input { width: 100%; height: 56px; border: 1px solid #dfe1e5; border-radius: 28px; padding: 0 120px 0 25px; font-size: 16px; outline: none; transition: all 0.3s; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05); }
-        .search-input:focus { border-color: #002b7f; box-shadow: 0 4px 18px rgba(0, 43, 127, 0.12); }
-        .flag-search-btn { position: absolute; right: 7px; height: 42px; border: none; border-radius: 21px; cursor: pointer; background-color: #f0f4ff; display: flex; align-items: center; padding: 0 15px; transition: all 0.2s; }
-        .flag-search-btn:hover { background-color: #002b7f; }
-        .flag-search-btn:hover .search-text { color: #ffffff; }
-        .flag-search-btn:disabled { opacity: 0.7; cursor: wait; }
-        .flag-image { width: 24px; height: 16px; background-image: url("https://flagcdn.com/w80/au.png"); background-size: cover; margin-right: 8px; border-radius: 2px; }
-        .search-text { font-size: 14px; color: #002b7f; font-weight: 600; }
-        .loading { display: none; margin-top: 20px; color: #002b7f; font-weight: 500; }
-        .error-box { width: 90%; max-width: 600px; margin-top: 18px; display: none; background: #fff4f4; border: 1px solid #ffd6d6; color: #b3261e; border-radius: 12px; padding: 14px 16px; line-height: 1.6; white-space: pre-wrap; }
-        #result-container { width: 90%; max-width: 600px; margin-top: 30px; display: none; background: #fff; border-radius: 16px; border: 1px solid #eee; padding: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); animation: fadeIn 0.4s ease-out; }
-        .track-header { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
-        .track-header h4 { color: #002b7f; font-size: 18px; }
-        .timeline { list-style: none; position: relative; padding-left: 20px; }
-        .timeline::before { content: ""; position: absolute; left: 0; top: 5px; width: 2px; height: 100%; background: #eee; }
-        .timeline-item { position: relative; margin-bottom: 20px; padding-left: 15px; }
-        .timeline-item::after { content: ""; position: absolute; left: -24px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #ddd; border: 2px solid #fff; }
-        .timeline-item.latest::after { background: #002b7f; box-shadow: 0 0 0 4px rgba(0, 43, 127, 0.1); }
-        .time { font-size: 12px; color: #999; margin-bottom: 4px; font-weight: bold; }
-        .context { font-size: 14px; color: #333; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
-        footer { background: #f8f9fa; padding: 20px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #eee; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- 2. 新增：AI 机器人样式 --- */
-        .ai-widget { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 9999; display: flex; flex-direction: row-reverse; align-items: center; gap: 14px; }
-        .ai-button { width: 60px; height: 60px; border-radius: 30px; background: #107df1; box-shadow: 0 4px 15px rgba(16, 125, 241, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
-        .ai-button:hover { transform: scale(1.1); }
-        .ai-button svg { width: 28px; height: 28px; fill: white; }
-        .ai-panel { width: 360px; height: 540px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .ai-header { background: #107df1; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #f7f9fc; font-size: 14px; display: flex; flex-direction: column; }
-        .ai-footer { padding: 12px; border-top: 1px solid #eee; display: flex; background: white; }
-        .ai-input { flex: 1; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; outline: none; }
-        .ai-send-btn { margin-left: 10px; color: #107df1; font-weight: bold; cursor: pointer; line-height: 34px; }
-        .msg { margin-bottom: 12px; max-width: 85%; padding: 10px; border-radius: 10px; line-height: 1.5; word-wrap: break-word; }
-        .msg-ai { background: white; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .msg-user { background: #107df1; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        @media (max-width: 768px) {
-            .ai-widget { right: 20px; bottom: 20px; top: auto; transform: none; flex-direction: column; align-items: flex-end; gap: 12px; }
-            .ai-panel { width: min(92vw, 360px); height: min(70vh, 540px); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>澳洲专线联盟 | AI-Express 智能物流</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: #182033;
+      background:
+        radial-gradient(circle at top right, rgba(255, 205, 0, 0.18), transparent 28%),
+        linear-gradient(180deg, #fbfcff 0%, #f4f7fb 100%);
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 24px 24px 0;
+      gap: 14px;
+    }
+    header a {
+      color: #6a7283;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .nav-login-btn {
+      background: #002b7f;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      box-shadow: 0 12px 30px rgba(0, 43, 127, 0.16);
+    }
+    main {
+      width: min(760px, calc(100vw - 32px));
+      margin: 0 auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8vh 0 56px;
+    }
+    .logo-container {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .logo-main {
+      font-size: clamp(42px, 8vw, 66px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    .logo-main .blue { color: #002b7f; }
+    .logo-main .gold { color: #ffb800; }
+    .logo-sub {
+      margin-top: 8px;
+      color: #7b8397;
+      font-size: 13px;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+    }
+    .search-card {
+      width: 100%;
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(0, 43, 127, 0.08);
+      box-shadow: 0 30px 60px rgba(21, 33, 68, 0.08);
+      backdrop-filter: blur(12px);
+    }
+    .search-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-input {
+      width: 100%;
+      height: 62px;
+      border-radius: 999px;
+      border: 1px solid #d7dfef;
+      padding: 0 132px 0 24px;
+      font-size: 17px;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: #002b7f;
+      box-shadow: 0 0 0 5px rgba(0, 43, 127, 0.08);
+    }
+    .flag-search-btn {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      height: 50px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #fff7d3 0%, #ffeaa3 100%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #002b7f;
+      font-weight: 700;
+    }
+    .flag-search-btn:disabled {
+      opacity: 0.7;
+      cursor: progress;
+    }
+    .flag-image {
+      width: 24px;
+      height: 16px;
+      border-radius: 3px;
+      background-image: url('https://flagcdn.com/w80/au.png');
+      background-size: cover;
+      background-position: center;
+    }
+    .hint {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #7b8397;
+    }
+    #loading {
+      display: none;
+      margin-top: 18px;
+      color: #002b7f;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #result-container {
+      width: 100%;
+      margin-top: 24px;
+      display: none;
+      gap: 18px;
+    }
+    .result-card {
+      border-radius: 24px;
+      background: #fff;
+      border: 1px solid rgba(0, 43, 127, 0.08);
+      box-shadow: 0 20px 40px rgba(19, 29, 58, 0.06);
+      padding: 24px;
+    }
+    .track-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #eef2f8;
+      margin-bottom: 18px;
+    }
+    .track-header h4 {
+      color: #002b7f;
+      font-size: 18px;
+    }
+    .track-summary {
+      font-size: 12px;
+      color: #7b8397;
+    }
+    .schedule-panel {
+      overflow: hidden;
+    }
+    .schedule-head h4 {
+      color: #002b7f;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+    .schedule-head p {
+      font-size: 13px;
+      color: #7b8397;
+      line-height: 1.6;
+    }
+    .schedule-rail-wrap {
+      overflow-x: auto;
+      margin: 20px -6px 0;
+      padding: 0 6px 6px;
+    }
+    .schedule-rail {
+      position: relative;
+      min-width: 880px;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(110px, 1fr));
+      gap: 10px;
+      padding: 16px 8px 4px;
+    }
+    .schedule-rail::before {
+      content: "";
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 32px;
+      height: 6px;
+      border-radius: 999px;
+      background: #dbe3ea;
+    }
+    .schedule-progress {
+      position: absolute;
+      left: 72px;
+      top: 32px;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #19b96b 0%, #0fa85f 100%);
+      width: 0;
+    }
+    .schedule-step {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+    .schedule-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      border: 4px solid #fff;
+      background: #d6dde4;
+      box-shadow: 0 0 0 1px rgba(0, 43, 127, 0.08);
+    }
+    .schedule-step.is-done .schedule-dot {
+      background: #10b067;
+      box-shadow: 0 0 0 6px rgba(16, 176, 103, 0.14);
+    }
+    .schedule-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a2235;
+      line-height: 1.5;
+    }
+    .schedule-date {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #7b8397;
+      min-height: 18px;
+      line-height: 1.5;
+    }
+    .schedule-step.is-done .schedule-date {
+      color: #0d8f55;
+      font-weight: 700;
+    }
+    .schedule-table-wrap {
+      overflow-x: auto;
+      margin-top: 18px;
+    }
+    .schedule-table {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+    }
+    .schedule-table th {
+      background: #11aa67;
+      color: #fff;
+      padding: 14px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255, 255, 255, 0.24);
+    }
+    .schedule-table th:last-child {
+      border-right: none;
+    }
+    .schedule-table td {
+      padding: 14px 12px;
+      text-align: center;
+      border: 1px solid #eef2f8;
+      font-size: 14px;
+      color: #1a2235;
+      white-space: nowrap;
+    }
+    .schedule-missing {
+      color: #99a3b3;
+    }
+    .timeline {
+      list-style: none;
+      position: relative;
+      padding-left: 24px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(180deg, #d7dfef 0%, #eef2f8 100%);
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 18px;
+    }
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #d7dfef;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0, 43, 127, 0.08);
+    }
+    .timeline-item.latest::before {
+      background: #002b7f;
+      box-shadow: 0 0 0 6px rgba(0, 43, 127, 0.08);
+    }
+    .time {
+      font-size: 12px;
+      color: #7b8397;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .context {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #1a2235;
+      white-space: pre-wrap;
+    }
+    .error-box {
+      display: none;
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fff2f2;
+      border: 1px solid #ffd2d2;
+      color: #9d2f2f;
+      font-size: 14px;
+    }
+    footer {
+      padding: 22px;
+      text-align: center;
+      color: #7b8397;
+      font-size: 12px;
+    }
+    @media (max-width: 640px) {
+      header {
+        padding: 18px 16px 0;
+      }
+      .search-card,
+      .result-card {
+        padding: 18px;
+        border-radius: 20px;
+      }
+      .search-input {
+        height: 58px;
+        padding-right: 114px;
+      }
+      .flag-search-btn {
+        padding: 0 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <a href=" ">价格预算</a >
-        <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a >
-    </header>
+  <header>
+    <a href="javascript:void(0)" onclick="alert('价格预算页面暂未接入。')">价格预算</a>
+    <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a>
+  </header>
 
-    <main>
-        <div class="logo-container">
-            <div class="logo-main"><span class="blue">澳洲</span><span class="gold">专线联盟</span></div>
-            <div class="logo-sub">AI-EXPRESS ALLIANCE</div>
-        </div>
-
-        <div class="search-wrapper">
-            <input type="text" class="search-input" placeholder="输入入仓号直接查询 (如: MY06001294AU3)" id="searchBox" onkeydown="if (event.key === 'Enter') handleSearch()">
-            <button class="flag-search-btn" id="searchBtn" onclick="handleSearch()">
-                <div class="flag-image"></div>
-                <div class="search-text">查询</div>
-            </button>
-        </div>
-
-        <div id="loading" class="loading">正在连接 api.ai-express.cn 调取轨迹...</div>
-        <div id="errorBox" class="error-box"></div>
-
-        <div id="result-container">
-            <div class="track-header"><h4 id="res-title">查询结果</h4></div>
-            <ul class="timeline" id="track-list"></ul>
-        </div>
-    </main>
-
-    <div class="ai-widget">
-        <div class="ai-panel" id="aiPanel">
-            <div class="ai-header">
-                <span>AI 智能客服</span>
-                <span style="cursor:pointer" onclick="toggleChat()">✕</span>
-            </div>
-            <div class="ai-body" id="chatBody">
-                <div class="msg msg-ai">您好！我是澳洲专线联盟官网客服。查轨迹建议直接用上方查询框；如果要问运费、报价、ERP、POD、发票，也可以直接问我。</div>
-            </div>
-            <div class="ai-footer">
-                <input type="text" class="ai-input" id="aiInput" placeholder="输入问题..." onkeydown="if(event.key==='Enter') sendToAI()">
-                <div class="ai-send-btn" onclick="sendToAI()">发送</div>
-            </div>
-        </div>
-        <div class="ai-button" onclick="toggleChat()">
-            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-        </div>
+  <main>
+    <div class="logo-container">
+      <div class="logo-main"><span class="blue">澳洲</span><span class="gold">专线联盟</span></div>
+      <div class="logo-sub">AI-EXPRESS ALLIANCE</div>
     </div>
 
-    <footer>联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
+    <section class="search-card">
+      <div class="search-wrapper">
+        <input
+          id="searchBox"
+          class="search-input"
+          type="text"
+          placeholder="输入入仓号查询轨迹 (如: MY06001294AU3)"
+        >
+        <button id="searchBtn" class="flag-search-btn" type="button" onclick="handleSearch()">
+          <span class="flag-image"></span>
+          <span>查询</span>
+        </button>
+      </div>
+      <div class="hint">查询会通过腾讯云安全入口转发，不再直接暴露网关 token。</div>
+      <div id="loading">正在从腾讯云调取轨迹信息，请稍候...</div>
+      <div id="errorBox" class="error-box"></div>
+    </section>
 
-    <script>
-        /* --- 原有查询逻辑 (完全保留) --- */
-        const TRACK_API_URL = "https://api.ai-express.cn/api/track";
+    <section id="result-container">
+      <div id="schedule-section" class="result-card schedule-panel" style="display:none;">
+        <div class="schedule-head">
+          <h4>计划时间轴</h4>
+          <p id="schedule-summary">根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。</p>
+        </div>
+        <div class="schedule-rail-wrap">
+          <div id="schedule-rail" class="schedule-rail"></div>
+        </div>
+        <div class="schedule-table-wrap">
+          <table class="schedule-table">
+            <thead>
+              <tr id="schedule-table-head"></tr>
+            </thead>
+            <tbody>
+              <tr id="schedule-table-body"></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-        function loginToERP() {
-            window.location.href = "http://121.196.233.99";
+      <div class="result-card track-panel">
+        <div class="track-header">
+          <h4 id="res-title">查询结果</h4>
+          <div id="res-summary" class="track-summary"></div>
+        </div>
+        <ul id="track-list" class="timeline"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
+
+  <script>
+    const TRACK_API_URL = "/api/track";
+
+    const searchBox = document.getElementById("searchBox");
+    const searchBtn = document.getElementById("searchBtn");
+    const loading = document.getElementById("loading");
+    const errorBox = document.getElementById("errorBox");
+    const resultContainer = document.getElementById("result-container");
+    const scheduleSection = document.getElementById("schedule-section");
+    const scheduleRail = document.getElementById("schedule-rail");
+    const scheduleSummary = document.getElementById("schedule-summary");
+    const scheduleTableHead = document.getElementById("schedule-table-head");
+    const scheduleTableBody = document.getElementById("schedule-table-body");
+    const trackList = document.getElementById("track-list");
+    const resTitle = document.getElementById("res-title");
+    const resSummary = document.getElementById("res-summary");
+    const SCHEDULE_STEPS = [
+      { key: "plannedLoadDate", label: "计划装柜", actual: false },
+      { key: "plannedDepartureDate", label: "计划离港", actual: false },
+      { key: "plannedArrivalDate", label: "计划到港", actual: false },
+      { key: "actualDepartureDate", label: "实际离港", actual: true },
+      { key: "actualArrivalDate", label: "实际到港", actual: true },
+      { key: "plannedPickupDate", label: "计划提柜", actual: false },
+      { key: "plannedUnpackDate", label: "计划拆柜", actual: false }
+    ];
+
+    searchBox.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        handleSearch();
+      }
+    });
+
+    function loginToERP() {
+      window.location.href = "http://121.196.233.99";
+    }
+
+    function setLoading(isLoading) {
+      loading.style.display = isLoading ? "block" : "none";
+      searchBtn.disabled = isLoading;
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function hideSchedule() {
+      scheduleSection.style.display = "none";
+      scheduleRail.innerHTML = "";
+      scheduleTableHead.innerHTML = "";
+      scheduleTableBody.innerHTML = "";
+      scheduleSummary.textContent = "根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。";
+    }
+
+    function renderTimeline(replyText, timeline) {
+      const items = Array.isArray(timeline) ? timeline : [];
+      if (!items.length) {
+        trackList.innerHTML = `<li class="timeline-item latest"><div class="context">${escapeHtml(replyText || "暂无轨迹信息")}</div></li>`;
+        return;
+      }
+      trackList.innerHTML = items.map((item, index) => `
+        <li class="timeline-item ${index === 0 ? "latest" : ""}">
+          <div class="time">${escapeHtml(item.time || "")}</div>
+          <div class="context">${escapeHtml(item.info || "")}</div>
+        </li>
+      `).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function normalizeDateText(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const match = text.match(/\d{4}-\d{2}-\d{2}/);
+      return match ? match[0] : text;
+    }
+
+    function parseScheduleFromReplyText(replyText) {
+      const result = {};
+      const mapping = {
+        "预配众筹柜": "crowdfundCode",
+        "众筹柜名称": "crowdfundName",
+        "计划进仓日期": "planJoinDate",
+        "计划入仓日期": "planJoinDate",
+        "计划装柜日期": "plannedLoadDate",
+        "计划离港日期": "plannedDepartureDate",
+        "计划到港日期": "plannedArrivalDate",
+        "实际离港日期": "actualDepartureDate",
+        "实际到港日期": "actualArrivalDate",
+        "计划提柜日期": "plannedPickupDate",
+        "计划提柜时间": "plannedPickupDate",
+        "计划拆柜日期": "plannedUnpackDate",
+        "计划拆柜时间": "plannedUnpackDate"
+      };
+      const lines = String(replyText || "").split("\n");
+      for (const line of lines) {
+        const match = line.trim().match(/^([^:：]+)[:：]\s*(.+)$/);
+        if (!match) {
+          continue;
+        }
+        const key = mapping[match[1].trim()];
+        if (!key) {
+          continue;
+        }
+        result[key] = key === "crowdfundCode" || key === "crowdfundName"
+          ? match[2].trim()
+          : normalizeDateText(match[2]);
+      }
+      return result;
+    }
+
+    function pickText(...values) {
+      for (const value of values) {
+        const text = String(value || "").trim();
+        if (text) {
+          return text;
+        }
+      }
+      return "";
+    }
+
+    function buildScheduleView(payload) {
+      const apiSchedule = payload?.planSchedule && typeof payload.planSchedule === "object"
+        ? payload.planSchedule
+        : {};
+      const fallback = parseScheduleFromReplyText(payload?.replyText || "");
+      const milestones = SCHEDULE_STEPS.map((step) => {
+        const date = normalizeDateText(
+          pickText(
+            apiSchedule[step.key],
+            fallback[step.key],
+            Array.isArray(apiSchedule.milestones)
+              ? apiSchedule.milestones.find((item) => item?.key === step.key)?.date
+              : ""
+          )
+        );
+        return { ...step, date };
+      });
+      return {
+        crowdfundCode: pickText(apiSchedule.crowdfundCode, fallback.crowdfundCode),
+        crowdfundName: pickText(apiSchedule.crowdfundName, fallback.crowdfundName),
+        planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
+        milestones,
+        hasAnyDate: milestones.some((item) => item.date)
+      };
+    }
+
+    function isMilestoneDone(item) {
+      if (!item?.date) {
+        return false;
+      }
+      if (item.actual) {
+        return true;
+      }
+      const probe = new Date(`${item.date}T00:00:00`);
+      if (Number.isNaN(probe.getTime())) {
+        return false;
+      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return probe.getTime() <= today.getTime();
+    }
+
+    function renderSchedule(payload) {
+      const schedule = buildScheduleView(payload);
+      if (!schedule.hasAnyDate) {
+        hideSchedule();
+        return;
+      }
+
+      const milestones = schedule.milestones.map((item) => ({
+        ...item,
+        done: isMilestoneDone(item)
+      }));
+      const lastDoneIndex = milestones.reduce((acc, item, index) => (item.done ? index : acc), -1);
+      const progressPercent = lastDoneIndex < 0
+        ? 0
+        : (lastDoneIndex / Math.max(1, milestones.length - 1)) * 100;
+
+      scheduleRail.innerHTML = `
+        <div class="schedule-progress" style="width:${progressPercent}%;"></div>
+        ${milestones.map((item) => `
+          <div class="schedule-step ${item.done ? "is-done" : ""}">
+            <div class="schedule-dot"></div>
+            <div class="schedule-label">${escapeHtml(item.label)}</div>
+            <div class="schedule-date">${escapeHtml(item.date || "待更新")}</div>
+          </div>
+        `).join("")}
+      `;
+
+      scheduleTableHead.innerHTML = milestones
+        .map((item) => `<th>${escapeHtml(item.label)}</th>`)
+        .join("");
+      scheduleTableBody.innerHTML = milestones
+        .map((item) => `<td>${item.date ? escapeHtml(item.date) : '<span class="schedule-missing">待更新</span>'}</td>`)
+        .join("");
+
+      const summaryParts = [];
+      if (schedule.crowdfundCode) {
+        summaryParts.push(`预配众筹柜：${schedule.crowdfundCode}`);
+      }
+      if (schedule.crowdfundName) {
+        summaryParts.push(`众筹柜名称：${schedule.crowdfundName}`);
+      }
+      if (schedule.planJoinDate) {
+        summaryParts.push(`计划进仓：${normalizeDateText(schedule.planJoinDate)}`);
+      }
+      scheduleSummary.textContent = summaryParts.length
+        ? summaryParts.join(" | ")
+        : "根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。";
+      scheduleSection.style.display = "block";
+    }
+
+    async function handleSearch() {
+      const putCode = searchBox.value.trim().toUpperCase();
+      if (!putCode) {
+        showError("请输入入仓号");
+        return;
+      }
+
+      clearError();
+      setLoading(true);
+      resultContainer.style.display = "none";
+      hideSchedule();
+      trackList.innerHTML = "";
+      resSummary.textContent = "";
+
+      try {
+        const response = await fetch(TRACK_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ putCode })
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload?.error?.message || "查询失败");
         }
 
-        async function handleSearch() {
-            const searchBox = document.getElementById("searchBox");
-            const loading = document.getElementById("loading");
-            const resultBox = document.getElementById("result-container");
-            const errorBox = document.getElementById("errorBox");
-            const trackList = document.getElementById("track-list");
-            const searchBtn = document.getElementById("searchBtn");
-            const inputVal = searchBox.value.trim().toUpperCase();
-
-            if (!inputVal) { alert("请输入入仓号"); return; }
-
-            loading.style.display = "block";
-            resultBox.style.display = "none";
-            errorBox.style.display = "none";
-            errorBox.textContent = "";
-            trackList.innerHTML = "";
-            searchBtn.disabled = true;
-
-            try {
-                const payload = await fetchJsonWithRetry(TRACK_API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ putCode: inputVal })
-                }, { attempts: 3 });
-                renderTrackResult(payload);
-                resultBox.style.display = "block";
-            } catch (error) {
-                const message = buildErrorMessage(error);
-                errorBox.textContent = message;
-                errorBox.style.display = "block";
-            } finally {
-                loading.style.display = "none";
-                searchBtn.disabled = false;
-            }
-        }
-
-        function renderTrackResult(payload) {
-            const title = document.getElementById("res-title");
-            const trackList = document.getElementById("track-list");
-            const putCode = payload?.putCode || "查询结果";
-            const replyText = typeof payload?.replyText === "string" ? payload.replyText.trim() : "";
-            const timeline = Array.isArray(payload?.timeline) ? payload.timeline : [];
-            title.textContent = putCode + " 轨迹结果";
-
-            if (!timeline.length) {
-                trackList.innerHTML = '<li class="timeline-item latest"><div class="context">' + escapeHtml(replyText || "暂无轨迹信息") + "</div></li>";
-                return;
-            }
-
-            trackList.innerHTML = timeline.map((item, index) => {
-                const time = typeof item?.time === "string" ? item.time.trim() : "";
-                const info = typeof item?.info === "string" ? item.info.trim() : "";
-                return '<li class="timeline-item ' + (index === 0 ? "latest" : "") + '"><div class="time">' + escapeHtml(time || " ") + '</div><div class="context">' + escapeHtml(info || replyText || "暂无轨迹信息") + "</div></li>";
-            }).join("");
-        }
-
-        function buildErrorMessage(error) {
-            const message = error?.message || "无法连接查询服务";
-            if (/Failed to fetch/i.test(message)) { return "查询接口连接失败。请检查 api.ai-express.cn 是否已正确配置 HTTPS 证书、CORS 和 /api/track 反向代理。"; }
-            return "查询失败：" + message;
-        }
-
-        function escapeHtml(value) {
-            return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-        }
-
-        function sleep(ms) {
-            return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        async function fetchJsonWithRetry(url, init, options = {}) {
-            const attempts = Number.isFinite(options.attempts) ? Math.max(1, Number(options.attempts)) : 3;
-            const retryStatuses = new Set([502, 503, 504]);
-            let lastError = null;
-
-            for (let attempt = 1; attempt <= attempts; attempt += 1) {
-                try {
-                    const response = await fetch(url, init);
-                    const payload = await response.json().catch(() => ({}));
-
-                    if (response.ok && payload?.ok === true) {
-                        return payload;
-                    }
-
-                    const error = new Error(payload?.error?.message || ("HTTP " + response.status));
-                    error.responseStatus = response.status;
-                    throw error;
-                } catch (error) {
-                    lastError = error;
-                    const message = String(error?.message || "");
-                    const status = Number(error?.responseStatus || 0);
-                    const retryable = /Failed to fetch|NetworkError|Load failed/i.test(message) || retryStatuses.has(status);
-
-                    if (!retryable || attempt >= attempts) {
-                        throw error;
-                    }
-
-                    await sleep(500 * attempt);
-                }
-            }
-
-            throw lastError || new Error("请求失败");
-        }
-
-        /* --- 新增：AI 客服交互逻辑 --- */
-        const CHAT_API_URL = "https://api.ai-express.cn/api/chat";
-        let chatPending = false;
-
-        function toggleChat() {
-            const panel = document.getElementById('aiPanel');
-            panel.style.display = (panel.style.display === 'flex') ? 'none' : 'flex';
-        }
-
-        async function sendToAI() {
-            const input = document.getElementById('aiInput');
-            const body = document.getElementById('chatBody');
-            const text = input.value.trim();
-            if (!text || chatPending) return;
-
-            appendChatMessage('user', text);
-            input.value = '';
-            input.disabled = true;
-            chatPending = true;
-
-            const pendingNode = appendChatMessage('ai', '正在思考，请稍候...');
-
-            try {
-                const payload = await fetchJsonWithRetry(CHAT_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
-                }, { attempts: 3 });
-                pendingNode.textContent = payload?.replyText || '暂时没有可返回的内容。';
-            } catch (error) {
-                pendingNode.textContent = 'AI 服务短暂波动，已自动重试；如仍失败，请稍后再试。';
-                pendingNode.style.color = '#b3261e';
-            } finally {
-                input.disabled = false;
-                input.focus();
-                chatPending = false;
-                body.scrollTop = body.scrollHeight;
-            }
-        }
-
-        function appendChatMessage(role, text) {
-            const body = document.getElementById('chatBody');
-            const node = document.createElement('div');
-            node.className = role === 'user' ? 'msg msg-user' : 'msg msg-ai';
-            node.textContent = text;
-            body.appendChild(node);
-            body.scrollTop = body.scrollHeight;
-            return node;
-        }
-    </script>
+        resTitle.textContent = `${payload.putCode} 轨迹结果`;
+        const timeline = Array.isArray(payload.timeline) ? payload.timeline : [];
+        resSummary.textContent = timeline.length ? `共 ${timeline.length} 条轨迹` : "已返回原始结果";
+        renderSchedule(payload);
+        renderTimeline(payload.replyText, timeline);
+        resultContainer.style.display = "grid";
+      } catch (error) {
+        hideSchedule();
+        showError(error.message || "连接腾讯云查询服务失败");
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
 </body>
 </html>
