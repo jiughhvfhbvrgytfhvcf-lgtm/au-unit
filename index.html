@@ -48,7 +48,7 @@
         .flag-image { width: 24px; height: 16px; background-image: url('https://flagcdn.com/w80/au.png'); background-size: cover; margin-right: 8px; border-radius: 2px; }
         .search-text { font-size: 14px; color: #002B7F; font-weight: 600; }
 
-        /* --- 4. 轨迹时间轴显示 (优化排版) --- */
+        /* --- 4. 轨迹时间轴显示 --- */
         #result-container {
             width: 90%; max-width: 600px; margin-top: 30px; display: none;
             background: #fff; border-radius: 16px; border: 1px solid #eee;
@@ -75,8 +75,8 @@
 <body>
 
     <header>
-        <a href="#">价格预算</a>
-        <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a>
+        <a href=" ">价格预算</a >
+        <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a >
     </header>
 
     <main>
@@ -106,16 +106,16 @@
     <footer>📍 联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
 
     <script>
-        // 配置信息 (请在此替换你的 Token)
-        const GATEWAY_URL = 'ws://182.254.180.143:18888';
-        const GATEWAY_TOKEN = '你的TOKEN'; 
+        // 配置信息 (请在此替换您的网关 Token)
+        const GATEWAY_URL = 'ws://182.254.180.143:18888'; 
+        const GATEWAY_TOKEN = '5kDtn4_II-D0k9AaRf1d_0efaB6TqQ27fpLT-Dv1a9c'; // <--- 请修改此处的 Token
 
-        // ERP 登录：直接跳转确保安全
+        // 1. ERP 登录跳转逻辑：直接跳转至指定 IP 地址
         function loginToERP() {
             window.location.href = 'http://121.196.233.99';
         }
 
-        // 轨迹查询：连接 OpenClaw 网关
+        // 2. 轨迹查询逻辑：连接 OpenClaw 网关
         async function handleSearch() {
             const inputVal = document.getElementById('searchBox').value.trim();
             const loading = document.getElementById('loading');
@@ -134,7 +134,7 @@
                 const payload = {
                     token: GATEWAY_TOKEN,
                     method: 'agent',
-                    params: { agentId: 'main', message: `轨迹${inputVal}` } // 传参格式
+                    params: { agentId: 'main', message: `轨迹${inputVal}` } // 发送“轨迹+入仓号”
                 };
                 ws.send(JSON.stringify(payload));
             };
@@ -156,9 +156,10 @@
             };
         }
 
-        // 轨迹排版逻辑
+        // 3. 轨迹排版逻辑：将文本解析为时间轴
         function parseAndRender(rawText) {
             const list = document.getElementById('track-list');
+            // 筛选符合轨迹格式的行 (包含“- 20”开头的行)
             const lines = rawText.split('\n').filter(l => l.includes('- 20'));
             
             if (lines.length === 0) {
