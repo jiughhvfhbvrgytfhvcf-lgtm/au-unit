@@ -175,37 +175,38 @@
       color: #7b8397;
       line-height: 1.6;
     }
-    .schedule-stage-wrap {
-      overflow-x: auto;
-      margin: 22px -6px 0;
-      padding: 0 6px 6px;
+    .schedule-board-wrap {
+      margin-top: 22px;
     }
-    .schedule-stage-grid {
+    .schedule-board {
       position: relative;
-      min-width: 760px;
       display: grid;
-      grid-template-columns: repeat(6, minmax(108px, 1fr));
-      gap: 14px;
-      padding: 8px 8px 4px;
+      grid-template-columns: 96px repeat(6, minmax(0, 1fr));
+      column-gap: 12px;
+      row-gap: 14px;
+      align-items: start;
+      width: 100%;
     }
-    .schedule-stage-grid::before {
-      content: "";
-      position: absolute;
-      left: 68px;
-      right: 68px;
-      top: 38px;
+    .schedule-board-track {
+      grid-column: 2 / span 6;
+      grid-row: 1;
+      align-self: start;
+      margin-top: 38px;
       height: 6px;
       border-radius: 999px;
       background: #dbe3ea;
+      position: relative;
+      z-index: 0;
     }
-    .schedule-stage-progress {
-      position: absolute;
-      left: 68px;
-      top: 38px;
-      height: 6px;
+    .schedule-board-track-progress {
+      height: 100%;
       border-radius: 999px;
       background: linear-gradient(90deg, #19b96b 0%, #0fa85f 100%);
       width: 0;
+    }
+    .schedule-board-spacer {
+      grid-column: 1;
+      grid-row: 1;
     }
     .schedule-stage {
       position: relative;
@@ -254,40 +255,32 @@
     .schedule-stage.is-done .schedule-stage-label {
       color: #0d8f55;
     }
-    .schedule-table-wrap {
-      overflow-x: auto;
-      margin-top: 18px;
-    }
-    .schedule-table {
-      width: 100%;
-      min-width: 760px;
-      border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 18px;
-    }
-    .schedule-table th {
-      background: #f3f6fb;
-      color: #4c556b;
-      padding: 14px 12px;
-      font-size: 13px;
+    .schedule-row-title {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 54px;
+      padding-left: 6px;
+      font-size: 15px;
       font-weight: 700;
+      color: #4c556b;
       white-space: nowrap;
+    }
+    .schedule-time-cell {
+      min-height: 54px;
+      border-radius: 16px;
       border: 1px solid #e4ebf3;
+      background: #f6f8fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-    }
-    .schedule-table th:first-child {
-      min-width: 92px;
-    }
-    .schedule-table td {
-      padding: 14px 12px;
-      text-align: center;
-      border: 1px solid #eef2f8;
+      padding: 10px 8px;
       font-size: 14px;
       color: #1a2235;
-      white-space: nowrap;
-      background: #f6f8fb;
+      line-height: 1.5;
     }
-    .schedule-table td.is-done {
+    .schedule-time-cell.is-done {
       background: #eefaf4;
       color: #0d8f55;
       font-weight: 700;
@@ -378,6 +371,38 @@
       .flag-search-btn {
         padding: 0 12px;
       }
+      .schedule-board {
+        grid-template-columns: 74px repeat(6, minmax(0, 1fr));
+        column-gap: 8px;
+        row-gap: 10px;
+      }
+      .schedule-board-track {
+        margin-top: 28px;
+      }
+      .schedule-stage-card {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        margin-bottom: 8px;
+      }
+      .schedule-stage-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        font-size: 18px;
+      }
+      .schedule-stage-label {
+        font-size: 12px;
+      }
+      .schedule-row-title {
+        min-height: 44px;
+        font-size: 12px;
+      }
+      .schedule-time-cell {
+        min-height: 44px;
+        font-size: 12px;
+        padding: 8px 4px;
+      }
     }
   </style>
 </head>
@@ -416,13 +441,8 @@
           <h4>计划时间轴</h4>
           <p id="schedule-summary">根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。</p>
         </div>
-        <div class="schedule-stage-wrap">
-          <div id="schedule-stage-grid" class="schedule-stage-grid"></div>
-        </div>
-        <div class="schedule-table-wrap">
-          <table class="schedule-table">
-            <tbody id="schedule-table-body"></tbody>
-          </table>
+        <div class="schedule-board-wrap">
+          <div id="schedule-board" class="schedule-board"></div>
         </div>
       </div>
 
@@ -447,9 +467,8 @@
     const errorBox = document.getElementById("errorBox");
     const resultContainer = document.getElementById("result-container");
     const scheduleSection = document.getElementById("schedule-section");
-    const scheduleStageGrid = document.getElementById("schedule-stage-grid");
+    const scheduleBoard = document.getElementById("schedule-board");
     const scheduleSummary = document.getElementById("schedule-summary");
-    const scheduleTableBody = document.getElementById("schedule-table-body");
     const trackList = document.getElementById("track-list");
     const resTitle = document.getElementById("res-title");
     const resSummary = document.getElementById("res-summary");
@@ -489,8 +508,7 @@
 
     function hideSchedule() {
       scheduleSection.style.display = "none";
-      scheduleStageGrid.innerHTML = "";
-      scheduleTableBody.innerHTML = "";
+      scheduleBoard.innerHTML = "";
       scheduleSummary.textContent = "根据当前业务时间点展示计划进度，绿色表示已完成或日期已到，灰色表示待到达。";
     }
 
@@ -662,8 +680,11 @@
         ? 0
         : (lastDoneIndex / Math.max(1, stages.length - 1)) * 100;
 
-      scheduleStageGrid.innerHTML = `
-        <div class="schedule-stage-progress" style="width:${progressPercent}%;"></div>
+      scheduleBoard.innerHTML = `
+        <div class="schedule-board-track">
+          <div class="schedule-board-track-progress" style="width:${progressPercent}%;"></div>
+        </div>
+        <div class="schedule-board-spacer"></div>
         ${stages.map((item) => `
           <div class="schedule-stage ${item.done ? "is-done" : ""}">
             <div class="schedule-stage-card">
@@ -672,25 +693,18 @@
             <div class="schedule-stage-label">${escapeHtml(item.label)}</div>
           </div>
         `).join("")}
-      `;
-
-      scheduleTableBody.innerHTML = `
-        <tr>
-          <th>计划时间</th>
+        <div class="schedule-row-title">计划时间</div>
           ${stages.map((item) => `
-            <td class="${item.done ? "is-done" : ""}">
+            <div class="schedule-time-cell ${item.done ? "is-done" : ""}">
               ${item.plannedDate ? escapeHtml(formatDisplayDate(item.plannedDate)) : '<span class="schedule-missing">待更新</span>'}
-            </td>
+            </div>
           `).join("")}
-        </tr>
-        <tr>
-          <th>实际时间</th>
+        <div class="schedule-row-title">实际时间</div>
           ${stages.map((item) => `
-            <td class="${item.actualDate ? "is-done" : ""}">
+            <div class="schedule-time-cell ${item.actualDate ? "is-done" : ""}">
               ${item.actualDate ? escapeHtml(formatDisplayDate(item.actualDate)) : '<span class="schedule-missing">待更新</span>'}
-            </td>
+            </div>
           `).join("")}
-        </tr>
       `;
 
       const summaryParts = [];
