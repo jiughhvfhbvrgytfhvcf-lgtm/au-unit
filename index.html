@@ -143,17 +143,11 @@
             searchBtn.disabled = true;
 
             try {
-                const response = await fetch(TRACK_API_URL, {
+                const payload = await fetchJsonWithRetry(TRACK_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ putCode: inputVal })
-                });
-
-                const payload = await response.json().catch(() => ({}));
-                if (!response.ok || payload.ok !== true) {
-                    const message = payload?.error?.message || "轨迹查询失败";
-                    throw new Error(message);
-                }
+                }, { attempts: 3 });
                 renderTrackResult(payload);
                 resultBox.style.display = "block";
             } catch (error) {
@@ -196,6 +190,44 @@
             return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
         }
 
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function fetchJsonWithRetry(url, init, options = {}) {
+            const attempts = Number.isFinite(options.attempts) ? Math.max(1, Number(options.attempts)) : 3;
+            const retryStatuses = new Set([502, 503, 504]);
+            let lastError = null;
+
+            for (let attempt = 1; attempt <= attempts; attempt += 1) {
+                try {
+                    const response = await fetch(url, init);
+                    const payload = await response.json().catch(() => ({}));
+
+                    if (response.ok && payload?.ok === true) {
+                        return payload;
+                    }
+
+                    const error = new Error(payload?.error?.message || ("HTTP " + response.status));
+                    error.responseStatus = response.status;
+                    throw error;
+                } catch (error) {
+                    lastError = error;
+                    const message = String(error?.message || "");
+                    const status = Number(error?.responseStatus || 0);
+                    const retryable = /Failed to fetch|NetworkError|Load failed/i.test(message) || retryStatuses.has(status);
+
+                    if (!retryable || attempt >= attempts) {
+                        throw error;
+                    }
+
+                    await sleep(500 * attempt);
+                }
+            }
+
+            throw lastError || new Error("请求失败");
+        }
+
         /* --- 新增：AI 客服交互逻辑 --- */
         const CHAT_API_URL = "https://api.ai-express.cn/api/chat";
         let chatPending = false;
@@ -219,19 +251,14 @@
             const pendingNode = appendChatMessage('ai', '正在思考，请稍候...');
 
             try {
-                const response = await fetch(CHAT_API_URL, {
+                const payload = await fetchJsonWithRetry(CHAT_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
-                });
-                const payload = await response.json().catch(() => ({}));
-                if (!response.ok || payload.ok !== true) {
-                    throw new Error(payload?.error?.message || 'AI 服务暂时不可用');
-                }
-
+                }, { attempts: 3 });
                 pendingNode.textContent = payload?.replyText || '暂时没有可返回的内容。';
             } catch (error) {
-                pendingNode.textContent = '连接 AI 失败，请稍后重试。';
+                pendingNode.textContent = 'AI 服务短暂波动，已自动重试；如仍失败，请稍后再试。';
                 pendingNode.style.color = '#b3261e';
             } finally {
                 input.disabled = false;
