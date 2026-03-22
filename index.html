@@ -5,78 +5,257 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>澳洲专线联盟 | AI-Express 智能物流</title>
     <style>
-        /* --- 1. 基础样式 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            display: flex; flex-direction: column; min-height: 100vh;
-            background: #ffffff; color: #1a1b1e;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #ffffff;
+            color: #1a1b1e;
         }
 
-        /* --- 2. 顶部导航栏 --- */
-        header { display: flex; justify-content: flex-end; padding: 20px 40px; align-items: center; }
-        header a { text-decoration: none; color: #5f6368; margin-left: 25px; font-size: 14px; font-weight: 500; }
-        .nav-login-btn { 
-            background-color: #002B7F; color: #ffffff !important; 
-            padding: 8px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; 
+        header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px 40px;
+            align-items: center;
         }
 
-        /* --- 3. 核心搜索区域 --- */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 10vh; padding-bottom: 50px; }
-        .logo-container { text-align: center; margin-bottom: 40px; }
-        .logo-main { font-size: 64px; font-weight: 700; letter-spacing: -1.5px; }
-        .logo-main .blue { color: #002B7F; }
-        .logo-main .gold { color: #FFCD00; }
-        .logo-sub { font-size: 14px; color: #8c9096; text-transform: uppercase; letter-spacing: 6px; margin-top: 5px; }
-
-        /* 搜索框与国旗查询按钮 */
-        .search-wrapper { width: 90%; max-width: 600px; position: relative; display: flex; align-items: center; }
-        .search-input { 
-            width: 100%; height: 56px; border: 1px solid #dfe1e5; border-radius: 28px; 
-            padding: 0 120px 0 25px; font-size: 16px; outline: none; transition: all 0.3s;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+        header a {
+            text-decoration: none;
+            color: #5f6368;
+            margin-left: 25px;
+            font-size: 14px;
+            font-weight: 500;
         }
-        .search-input:focus { border-color: #002B7F; box-shadow: 0 4px 18px rgba(0,43,127,0.12); }
+
+        .nav-login-btn {
+            background-color: #002b7f;
+            color: #ffffff !important;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 10vh;
+            padding-bottom: 50px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-main {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+        }
+
+        .logo-main .blue { color: #002b7f; }
+        .logo-main .gold { color: #ffcd00; }
+
+        .logo-sub {
+            font-size: 14px;
+            color: #8c9096;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-top: 5px;
+        }
+
+        .search-wrapper {
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 56px;
+            border: 1px solid #dfe1e5;
+            border-radius: 28px;
+            padding: 0 120px 0 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-input:focus {
+            border-color: #002b7f;
+            box-shadow: 0 4px 18px rgba(0, 43, 127, 0.12);
+        }
 
         .flag-search-btn {
-            position: absolute; right: 7px; height: 42px; border: none; border-radius: 21px;
-            cursor: pointer; background-color: #f0f4ff; display: flex; align-items: center; padding: 0 15px;
+            position: absolute;
+            right: 7px;
+            height: 42px;
+            border: none;
+            border-radius: 21px;
+            cursor: pointer;
+            background-color: #f0f4ff;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
             transition: all 0.2s;
         }
-        .flag-search-btn:hover { background-color: #002B7F; }
-        .flag-search-btn:hover .search-text { color: #ffffff; }
-        .flag-image { width: 24px; height: 16px; background-image: url('https://flagcdn.com/w80/au.png'); background-size: cover; margin-right: 8px; border-radius: 2px; }
-        .search-text { font-size: 14px; color: #002B7F; font-weight: 600; }
 
-        /* --- 4. 轨迹时间轴显示 --- */
+        .flag-search-btn:hover {
+            background-color: #002b7f;
+        }
+
+        .flag-search-btn:hover .search-text {
+            color: #ffffff;
+        }
+
+        .flag-search-btn:disabled {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .flag-image {
+            width: 24px;
+            height: 16px;
+            background-image: url("https://flagcdn.com/w80/au.png");
+            background-size: cover;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        .search-text {
+            font-size: 14px;
+            color: #002b7f;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            color: #002b7f;
+            font-weight: 500;
+        }
+
+        .error-box {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 18px;
+            display: none;
+            background: #fff4f4;
+            border: 1px solid #ffd6d6;
+            color: #b3261e;
+            border-radius: 12px;
+            padding: 14px 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
         #result-container {
-            width: 90%; max-width: 600px; margin-top: 30px; display: none;
-            background: #fff; border-radius: 16px; border: 1px solid #eee;
-            padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 90%;
+            max-width: 600px;
+            margin-top: 30px;
+            display: none;
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #eee;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             animation: fadeIn 0.4s ease-out;
         }
-        .track-header { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
-        .track-header h4 { color: #002B7F; font-size: 18px; }
-        
-        .timeline { list-style: none; position: relative; padding-left: 20px; }
-        .timeline::before { content: ''; position: absolute; left: 0; top: 5px; width: 2px; height: 100%; background: #eee; }
-        .timeline-item { position: relative; margin-bottom: 20px; padding-left: 15px; }
-        .timeline-item::after { content: ''; position: absolute; left: -24px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #ddd; border: 2px solid #fff; }
-        .timeline-item.latest::after { background: #002B7F; box-shadow: 0 0 0 4px rgba(0,43,127,0.1); }
-        .time { font-size: 12px; color: #999; margin-bottom: 4px; font-weight: bold; }
-        .context { font-size: 14px; color: #333; line-height: 1.6; white-space: pre-wrap; }
 
-        .loading { display: none; margin-top: 20px; color: #002B7F; font-weight: 500; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        footer { background: #f8f9fa; padding: 20px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #eee; }
+        .track-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .track-header h4 {
+            color: #002b7f;
+            font-size: 18px;
+        }
+
+        .timeline {
+            list-style: none;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 2px;
+            height: 100%;
+            background: #eee;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 15px;
+        }
+
+        .timeline-item::after {
+            content: "";
+            position: absolute;
+            left: -24px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            border: 2px solid #fff;
+        }
+
+        .timeline-item.latest::after {
+            background: #002b7f;
+            box-shadow: 0 0 0 4px rgba(0, 43, 127, 0.1);
+        }
+
+        .time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .context {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
-
     <header>
-        <a href=" ">价格预算</a >
-        <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a >
+        <a href="javascript:void(0)">价格预算</a>
+        <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a>
     </header>
 
     <main>
@@ -86,14 +265,21 @@
         </div>
 
         <div class="search-wrapper">
-            <input type="text" class="search-input" placeholder="输入入仓号直接查询 (如: MY06001294AU3)" id="searchBox" onkeydown="if(event.keyCode==13) handleSearch()">
-            <button class="flag-search-btn" onclick="handleSearch()">
+            <input
+                type="text"
+                class="search-input"
+                placeholder="输入入仓号直接查询 (如: MY06001294AU3)"
+                id="searchBox"
+                onkeydown="if (event.key === 'Enter') handleSearch()"
+            >
+            <button class="flag-search-btn" id="searchBtn" onclick="handleSearch()">
                 <div class="flag-image"></div>
-                <div class="search-text">查询轨迹</div>
+                <div class="search-text">查询</div>
             </button>
         </div>
 
-        <div id="loading" class="loading">正在从腾讯云调取轨迹信息...</div>
+        <div id="loading" class="loading">正在连接 api.ai-express.cn 调取轨迹...</div>
+        <div id="errorBox" class="error-box"></div>
 
         <div id="result-container">
             <div class="track-header">
@@ -103,84 +289,110 @@
         </div>
     </main>
 
-    <footer>📍 联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
+    <footer>联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
 
     <script>
-        // 配置信息
-        const GATEWAY_URL = 'ws://182.254.180.143:18888'; 
-        const GATEWAY_TOKEN = '5kDtn4_II-D0k9AaRf1d_0efaB6TqQ27fpLT-Dv1a9c'; //
+        const TRACK_API_URL = "https://api.ai-express.cn/api/track";
 
-        // 1. ERP 登录直达逻辑
         function loginToERP() {
-            window.location.href = 'http://121.196.233.99'; //
+            window.location.href = "http://121.196.233.99";
         }
 
-        // 2. 轨迹查询逻辑
         async function handleSearch() {
-            const inputVal = document.getElementById('searchBox').value.trim();
-            const loading = document.getElementById('loading');
-            const resBox = document.getElementById('result-container');
-            const list = document.getElementById('track-list');
+            const searchBox = document.getElementById("searchBox");
+            const loading = document.getElementById("loading");
+            const resultBox = document.getElementById("result-container");
+            const errorBox = document.getElementById("errorBox");
+            const trackList = document.getElementById("track-list");
+            const searchBtn = document.getElementById("searchBtn");
+            const inputVal = searchBox.value.trim().toUpperCase();
 
-            if (!inputVal) return alert('请输入入仓号');
-
-            loading.style.display = 'block';
-            resBox.style.display = 'none';
-            list.innerHTML = '';
-
-            const ws = new WebSocket(GATEWAY_URL);
-
-            ws.onopen = () => {
-                const payload = {
-                    token: GATEWAY_TOKEN,
-                    method: 'agent',
-                    params: { 
-                        agentId: 'main', 
-                        // 在后台自动为入仓号加上“轨迹”前缀发送
-                        message: `轨迹${inputVal}` 
-                    }
-                };
-                ws.send(JSON.stringify(payload));
-            };
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.method === 'agent' && data.result) {
-                    parseAndRender(data.result);
-                    loading.style.display = 'none';
-                    resBox.style.display = 'block';
-                    ws.close();
-                }
-            };
-
-            ws.onerror = () => {
-                loading.style.display = 'none';
-                alert('连接网关失败。提示：HTTPS网站连接WS可能被拦截，请确认网关是否支持WSS');
-                ws.close();
-            };
-        }
-
-        // 3. 轨迹排版渲染逻辑
-        function parseAndRender(rawText) {
-            const list = document.getElementById('track-list');
-            const lines = rawText.split('\n').filter(l => l.includes('- 20'));
-            
-            if (lines.length === 0) {
-                list.innerHTML = `<li class="timeline-item"><div class="context">${rawText}</div></li>`;
+            if (!inputVal) {
+                alert("请输入入仓号");
                 return;
             }
 
-            list.innerHTML = lines.map((line, index) => {
-                const parts = line.replace('- ', '').split(' | ');
-                const time = parts[0] || '';
-                const info = parts[1] || '';
-                return `
-                    <li class="timeline-item ${index === 0 ? 'latest' : ''}">
-                        <div class="time">${time}</div>
-                        <div class="context">${info}</div>
-                    </li>
-                `;
-            }).join('');
+            loading.style.display = "block";
+            resultBox.style.display = "none";
+            errorBox.style.display = "none";
+            errorBox.textContent = "";
+            trackList.innerHTML = "";
+            searchBtn.disabled = true;
+
+            try {
+                const response = await fetch(TRACK_API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        putCode: inputVal
+                    })
+                });
+
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload.ok !== true) {
+                    const message = payload?.error?.message || "轨迹查询失败";
+                    throw new Error(message);
+                }
+
+                renderTrackResult(payload);
+                resultBox.style.display = "block";
+            } catch (error) {
+                const message = buildErrorMessage(error);
+                errorBox.textContent = message;
+                errorBox.style.display = "block";
+            } finally {
+                loading.style.display = "none";
+                searchBtn.disabled = false;
+            }
+        }
+
+        function renderTrackResult(payload) {
+            const title = document.getElementById("res-title");
+            const trackList = document.getElementById("track-list");
+            const putCode = payload?.putCode || "查询结果";
+            const replyText = typeof payload?.replyText === "string" ? payload.replyText.trim() : "";
+            const timeline = Array.isArray(payload?.timeline) ? payload.timeline : [];
+
+            title.textContent = putCode + " 轨迹结果";
+
+            if (!timeline.length) {
+                trackList.innerHTML = [
+                    '<li class="timeline-item latest">',
+                    '  <div class="context">' + escapeHtml(replyText || "暂无轨迹信息") + "</div>",
+                    "</li>"
+                ].join("");
+                return;
+            }
+
+            trackList.innerHTML = timeline.map((item, index) => {
+                const time = typeof item?.time === "string" ? item.time.trim() : "";
+                const info = typeof item?.info === "string" ? item.info.trim() : "";
+                return [
+                    '<li class="timeline-item ' + (index === 0 ? "latest" : "") + '">',
+                    '  <div class="time">' + escapeHtml(time || " ") + "</div>",
+                    '  <div class="context">' + escapeHtml(info || replyText || "暂无轨迹信息") + "</div>",
+                    "</li>"
+                ].join("");
+            }).join("");
+        }
+
+        function buildErrorMessage(error) {
+            const message = error?.message || "无法连接查询服务";
+            if (/Failed to fetch/i.test(message)) {
+                return "查询接口连接失败。请检查 api.ai-express.cn 是否已正确配置 HTTPS 证书、CORS 和 /api/track 反向代理。";
+            }
+            return "查询失败：" + message;
+        }
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
         }
     </script>
 </body>
