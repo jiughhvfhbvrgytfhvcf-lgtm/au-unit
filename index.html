@@ -426,7 +426,7 @@
   <footer>联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
 
   <script>
-    const TRACK_API_URL = "/api/track";
+    const TRACK_API_URL = "https://api.ai-express.cn/api/track";
 
     const searchBox = document.getElementById("searchBox");
     const searchBtn = document.getElementById("searchBtn");
@@ -674,9 +674,15 @@
           },
           body: JSON.stringify({ putCode })
         });
-        const payload = await response.json();
+        const rawBody = await response.text();
+        let payload = null;
+        try {
+          payload = rawBody ? JSON.parse(rawBody) : {};
+        } catch (_error) {
+          throw new Error("查询接口返回了页面内容，请检查 api.ai-express.cn 的 HTTPS 与 /api/track 配置");
+        }
         if (!response.ok || !payload.ok) {
-          throw new Error(payload?.error?.message || "查询失败");
+          throw new Error(payload?.error?.message || `查询失败 (${response.status})`);
         }
 
         resTitle.textContent = `${payload.putCode} 轨迹结果`;
