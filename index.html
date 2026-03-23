@@ -879,6 +879,25 @@
       return result;
     }
 
+    function parseTimelineEntriesFromReplyText(replyText) {
+      const items = [];
+      for (const rawLine of String(replyText || "").split("\n")) {
+        const cleaned = rawLine.trim().replace(/^[-·•]+\s*/, "");
+        if (!cleaned) {
+          continue;
+        }
+        const match = cleaned.match(/^(\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)\s*\|\s*(.+)$/);
+        if (!match) {
+          continue;
+        }
+        items.push({
+          time: match[1].trim(),
+          info: match[2].trim(),
+        });
+      }
+      return items;
+    }
+
     function pickText(...values) {
       for (const value of values) {
         const text = String(value || "").trim();
@@ -887,6 +906,124 @@
         }
       }
       return "";
+    }
+
+    function classifyClearanceStatus(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const lower = text.toLowerCase();
+      if (lower.includes("clearance processing complete") || /\bclean\b/.test(lower)) {
+        return "clean";
+      }
+      if (lower.includes("customs held") || /\bheld\b/.test(lower)) {
+        return "held";
+      }
+      return "";
+    }
+
+    function deriveStageMomentsFromTimeline(payload) {
+      const timelineEntries = Array.isArray(payload?.timeline) && payload.timeline.length
+        ? payload.timeline
+        : parseTimelineEntriesFromReplyText(payload?.replyText || "");
+      const derived = {};
+
+      const register = (key, timeValue) => {
+        const momentText = normalizeMomentText(timeValue);
+        if (!momentText || derived[key]) {
+          return;
+        }
+        derived[key] = momentText;
+      };
+
+      for (const item of timelineEntries) {
+        const info = String(item?.info || "").trim().toLowerCase();
+        if (!info) {
+          continue;
+        }
+        if (info.includes("flight dispatched")) {
+          register("actualDepartureDate", item.time);
+          continue;
+        }
+        if (info.includes("flight arrived")) {
+          register("actualArrivalDate", item.time);
+          continue;
+        }
+        if (info.includes("arrived at warehouse")) {
+          register("actualPickupDate", item.time);
+          continue;
+        }
+        if (info.includes("deconsolidation has been done")) {
+          register("actualUnpackDate", item.time);
+          continue;
+        }
+        if (info.includes("parcels successfully delivered") || info.includes("shipment despatched to courier")) {
+          register("actualDeliveryDate", item.time);
+        }
+      }
+
+      return derived;
+    }
+
+    function chooseClearanceSignals(payload, fallback) {
+      const candidates = [];
+      const pushCandidate = (timeValue, statusValue, source) => {
+        const status = classifyClearanceStatus(statusValue);
+        if (!status) {
+          return;
+        }
+        const momentText = normalizeMomentText(timeValue);
+        candidates.push({
+          source,
+          status,
+          momentText,
+          moment: parseMomentValue(momentText),
+        });
+      };
+
+      pushCandidate(
+        payload?.planSchedule?.importClearanceTime || payload?.planSchedule?.importClearanceDate,
+        payload?.planSchedule?.importClearanceStatus,
+        "api"
+      );
+      pushCandidate(fallback.importClearanceTime, fallback.importClearanceStatus, "reply");
+
+      const timelineEntries = Array.isArray(payload?.timeline) && payload.timeline.length
+        ? payload.timeline
+        : parseTimelineEntriesFromReplyText(payload?.replyText || "");
+      for (const item of timelineEntries) {
+        pushCandidate(item?.time, item?.info, "timeline");
+      }
+
+      const bestByStatus = new Map();
+      for (const item of candidates) {
+        const current = bestByStatus.get(item.status);
+        if (!current) {
+          bestByStatus.set(item.status, item);
+          continue;
+        }
+        if (item.moment && !current.moment) {
+          bestByStatus.set(item.status, item);
+          continue;
+        }
+        if (item.moment && current.moment && item.moment > current.moment) {
+          bestByStatus.set(item.status, item);
+        }
+      }
+
+      return Array.from(bestByStatus.values()).sort((a, b) => {
+        if (a.moment && b.moment) {
+          return a.moment - b.moment;
+        }
+        if (a.moment) {
+          return -1;
+        }
+        if (b.moment) {
+          return 1;
+        }
+        return a.status.localeCompare(b.status);
+      });
     }
 
     function hasMomentTime(value) {
@@ -915,6 +1052,8 @@
         ? payload.planSchedule
         : {};
       const fallback = parseScheduleFromReplyText(payload?.replyText || "");
+      const timelineDerived = deriveStageMomentsFromTimeline(payload);
+      const clearanceSignals = chooseClearanceSignals(payload, fallback);
       const stages = SCHEDULE_STEPS.map((step) => {
         const plannedMoment = pickMomentText(
           apiSchedule[step.plannedKey],
@@ -926,6 +1065,7 @@
         const actualMoment = pickMomentText(
           apiSchedule[step.actualKey],
           fallback[step.actualKey],
+          timelineDerived[step.actualKey],
           Array.isArray(apiSchedule.milestones)
             ? apiSchedule.milestones.find((item) => item?.key === step.actualKey)?.date
             : ""
@@ -944,15 +1084,7 @@
         planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
         customsStatus: pickText(apiSchedule.customsStatus, fallback.customsStatus),
         voyageStatus: pickText(apiSchedule.voyageStatus, fallback.voyageStatus),
-        importClearanceTime: pickMomentText(
-          apiSchedule.importClearanceTime,
-          apiSchedule.importClearanceDate,
-          fallback.importClearanceTime
-        ),
-        importClearanceStatus: pickText(
-          apiSchedule.importClearanceStatus,
-          fallback.importClearanceStatus
-        ),
+        importClearanceSignals: clearanceSignals,
         stages,
         hasAnyDate: stages.some((item) => item.plannedDate || item.actualDate)
       };
@@ -1033,17 +1165,15 @@
       return item?.actualMoment || item?.plannedMoment || "";
     }
 
-    function buildClearanceMarker(schedule, stages) {
-      const status = normalizeSingleStatusLabel(
-        pickText(schedule.importClearanceStatus, schedule.voyageStatus)
-      );
+    function buildClearanceMarker(signal, stages) {
+      const status = normalizeSingleStatusLabel(signal?.status);
       if (!status) {
         return null;
       }
 
       const fallbackStart = stages.findIndex((item) => item.key === "departure");
       const fallbackEnd = stages.findIndex((item) => item.key === "arrival");
-      const clearanceTime = normalizeMomentText(schedule.importClearanceTime);
+      const clearanceTime = normalizeMomentText(signal?.momentText);
       const clearanceMoment = parseMomentValue(clearanceTime);
       const knownMoments = stages
         .map((item, index) => ({
@@ -1096,6 +1226,36 @@
         startIndex,
         endIndex,
       };
+    }
+
+    function buildClearanceMarkers(schedule, stages) {
+      const rawSignals = Array.isArray(schedule.importClearanceSignals)
+        ? schedule.importClearanceSignals
+        : [];
+      const markers = rawSignals
+        .map((signal) => buildClearanceMarker(signal, stages))
+        .filter(Boolean)
+        .sort((a, b) => a.startIndex - b.startIndex || a.endIndex - b.endIndex || a.status.localeCompare(b.status));
+
+      if (markers.length >= 2) {
+        const heldMarker = markers.find((item) => item.status === "held");
+        const cleanMarker = markers.find((item) => item.status === "clean");
+        if (
+          heldMarker &&
+          cleanMarker &&
+          heldMarker.startIndex === cleanMarker.startIndex &&
+          heldMarker.endIndex === cleanMarker.endIndex
+        ) {
+          const nextStart = Math.min(stages.length - 2, cleanMarker.startIndex + 1);
+          const nextEnd = Math.min(stages.length - 1, cleanMarker.endIndex + 1);
+          if (nextStart < nextEnd) {
+            cleanMarker.startIndex = nextStart;
+            cleanMarker.endIndex = nextEnd;
+          }
+        }
+      }
+
+      return markers;
     }
 
     function getSegmentTone(labelPart) {
@@ -1224,7 +1384,7 @@
           done: toStageIndex >= 0 ? stages[toStageIndex].done : false
         };
       });
-      const clearanceMarker = buildClearanceMarker(schedule, stages);
+      const clearanceMarkers = buildClearanceMarkers(schedule, stages);
 
       scheduleBoard.innerHTML = `
         ${segments.map((segment, index) => `
@@ -1234,12 +1394,12 @@
             <div class="schedule-segment-bottom">${renderSegmentToneHtml(segment.parts.bottom)}</div>
           </div>
         `).join("")}
-        ${clearanceMarker ? `
+        ${clearanceMarkers.map((clearanceMarker) => `
           <div class="schedule-clearance-marker" style="grid-column:${clearanceMarker.startIndex + 2} / ${clearanceMarker.endIndex + 3}; grid-row:1;">
             <div class="schedule-clearance-top">${renderSegmentToneHtml(clearanceMarker.status)}</div>
             <div class="schedule-clearance-bottom">${clearanceMarker.timeLabel ? escapeHtml(clearanceMarker.timeLabel) : "&nbsp;"}</div>
           </div>
-        ` : ""}
+        `).join("")}
         ${stages.map((item, index) => `
           <div class="schedule-stage ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:1;">
             <div class="schedule-stage-card">
