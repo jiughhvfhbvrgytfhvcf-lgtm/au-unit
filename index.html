@@ -1000,6 +1000,27 @@
       return match[4] ? `${datePart} ${match[4]}` : datePart;
     }
 
+    function normalizeSingleStatusLabel(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const lower = text.toLowerCase();
+      if (lower.includes("held")) {
+        return "held";
+      }
+      if (lower.includes("clean")) {
+        return "clean";
+      }
+      if (text.includes("未报关")) {
+        return "未报关";
+      }
+      if (text.includes("已报关")) {
+        return "已报关";
+      }
+      return text.split("/")[0].trim();
+    }
+
     function parseMomentValue(value) {
       const text = normalizeMomentText(value);
       if (!text) {
@@ -1017,7 +1038,9 @@
     }
 
     function buildClearanceMarker(schedule, stages) {
-      const status = pickText(schedule.importClearanceStatus, schedule.voyageStatus);
+      const status = normalizeSingleStatusLabel(
+        pickText(schedule.importClearanceStatus, schedule.voyageStatus)
+      );
       if (!status) {
         return null;
       }
