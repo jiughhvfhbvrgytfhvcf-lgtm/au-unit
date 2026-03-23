@@ -917,22 +917,18 @@
       const fallback = parseScheduleFromReplyText(payload?.replyText || "");
       const stages = SCHEDULE_STEPS.map((step) => {
         const plannedMoment = pickMomentText(
-          pickText(
-            apiSchedule[step.plannedKey],
-            fallback[step.plannedKey],
-            Array.isArray(apiSchedule.milestones)
-              ? apiSchedule.milestones.find((item) => item?.key === step.plannedKey)?.date
-              : ""
-          )
+          apiSchedule[step.plannedKey],
+          fallback[step.plannedKey],
+          Array.isArray(apiSchedule.milestones)
+            ? apiSchedule.milestones.find((item) => item?.key === step.plannedKey)?.date
+            : ""
         );
         const actualMoment = pickMomentText(
-          pickText(
-            apiSchedule[step.actualKey],
-            fallback[step.actualKey],
-            Array.isArray(apiSchedule.milestones)
-              ? apiSchedule.milestones.find((item) => item?.key === step.actualKey)?.date
-              : ""
-          )
+          apiSchedule[step.actualKey],
+          fallback[step.actualKey],
+          Array.isArray(apiSchedule.milestones)
+            ? apiSchedule.milestones.find((item) => item?.key === step.actualKey)?.date
+            : ""
         );
         return {
           ...step,
