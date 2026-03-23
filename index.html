@@ -225,6 +225,35 @@
     .schedule-segment-divider {
       color: #99a3b3;
     }
+    .schedule-clearance-marker {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 118px;
+      pointer-events: none;
+    }
+    .schedule-clearance-top,
+    .schedule-clearance-bottom {
+      min-height: 18px;
+      padding: 0 6px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+      white-space: nowrap;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 999px;
+    }
+    .schedule-clearance-top {
+      margin-bottom: 10px;
+    }
+    .schedule-clearance-bottom {
+      margin-top: 10px;
+      color: #7b8397;
+    }
     .schedule-stage {
       position: relative;
       z-index: 1;
@@ -692,7 +721,7 @@
     const SCHEDULE_SEGMENTS = [
       { from: "warehousing", to: "load", defaultLabel: "" },
       { from: "load", to: "departure", defaultLabel: "", statusKey: "customsStatus" },
-      { from: "departure", to: "arrival", defaultLabel: "held / clean", statusKey: "voyageStatus" },
+      { from: "departure", to: "arrival", defaultLabel: "" },
       { from: "arrival", to: "pickup", defaultLabel: "" },
       { from: "pickup", to: "unpack", defaultLabel: "" },
       { from: "unpack", to: "delivery", defaultLabel: "" }
@@ -754,8 +783,17 @@
         .replaceAll("'", "&#39;");
     }
 
-    function normalizeDateText(value) {
+    function normalizeMomentText(value) {
       const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const match = text.match(/\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?/);
+      return match ? match[0] : text;
+    }
+
+    function normalizeDateText(value) {
+      const text = normalizeMomentText(value);
       if (!text) {
         return "";
       }
@@ -806,11 +844,24 @@
         "实际派送时间": "actualDeliveryDate",
         "实际签收日期": "actualDeliveryDate",
         "实际签收时间": "actualDeliveryDate",
+        "进口清关日期": "importClearanceTime",
+        "进口清关时间": "importClearanceTime",
+        "清关日期": "importClearanceTime",
+        "清关时间": "importClearanceTime",
+        "进口清关状态": "importClearanceStatus",
+        "清关状态": "importClearanceStatus",
         "报关状态": "customsStatus",
         "报关放行状态": "customsStatus",
         "航程状态": "voyageStatus",
         "海运状态": "voyageStatus"
       };
+      const textKeys = new Set([
+        "crowdfundCode",
+        "crowdfundName",
+        "customsStatus",
+        "voyageStatus",
+        "importClearanceStatus",
+      ]);
       const lines = String(replyText || "").split("\n");
       for (const line of lines) {
         const match = line.trim().match(/^([^:：]+)[:：]\s*(.+)$/);
@@ -821,9 +872,9 @@
         if (!key) {
           continue;
         }
-        result[key] = key === "crowdfundCode" || key === "crowdfundName" || key === "customsStatus" || key === "voyageStatus"
+        result[key] = textKeys.has(key)
           ? match[2].trim()
-          : normalizeDateText(match[2]);
+          : normalizeMomentText(match[2]);
       }
       return result;
     }
@@ -838,13 +889,34 @@
       return "";
     }
 
+    function hasMomentTime(value) {
+      return /\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(normalizeMomentText(value));
+    }
+
+    function pickMomentText(...values) {
+      let fallback = "";
+      for (const value of values) {
+        const text = normalizeMomentText(value);
+        if (!text) {
+          continue;
+        }
+        if (hasMomentTime(text)) {
+          return text;
+        }
+        if (!fallback) {
+          fallback = text;
+        }
+      }
+      return fallback;
+    }
+
     function buildScheduleView(payload) {
       const apiSchedule = payload?.planSchedule && typeof payload.planSchedule === "object"
         ? payload.planSchedule
         : {};
       const fallback = parseScheduleFromReplyText(payload?.replyText || "");
       const stages = SCHEDULE_STEPS.map((step) => {
-        const plannedDate = normalizeDateText(
+        const plannedMoment = pickMomentText(
           pickText(
             apiSchedule[step.plannedKey],
             fallback[step.plannedKey],
@@ -853,7 +925,7 @@
               : ""
           )
         );
-        const actualDate = normalizeDateText(
+        const actualMoment = pickMomentText(
           pickText(
             apiSchedule[step.actualKey],
             fallback[step.actualKey],
@@ -862,7 +934,13 @@
               : ""
           )
         );
-        return { ...step, plannedDate, actualDate };
+        return {
+          ...step,
+          plannedMoment,
+          actualMoment,
+          plannedDate: normalizeDateText(plannedMoment),
+          actualDate: normalizeDateText(actualMoment),
+        };
       });
       return {
         crowdfundCode: pickText(apiSchedule.crowdfundCode, fallback.crowdfundCode),
@@ -870,6 +948,15 @@
         planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
         customsStatus: pickText(apiSchedule.customsStatus, fallback.customsStatus),
         voyageStatus: pickText(apiSchedule.voyageStatus, fallback.voyageStatus),
+        importClearanceTime: pickMomentText(
+          apiSchedule.importClearanceTime,
+          apiSchedule.importClearanceDate,
+          fallback.importClearanceTime
+        ),
+        importClearanceStatus: pickText(
+          apiSchedule.importClearanceStatus,
+          fallback.importClearanceStatus
+        ),
         stages,
         hasAnyDate: stages.some((item) => item.plannedDate || item.actualDate)
       };
@@ -898,6 +985,98 @@
         return text;
       }
       return `${Number(match[2])}月${Number(match[3])}日`;
+    }
+
+    function formatMomentLabel(value) {
+      const text = normalizeMomentText(value);
+      if (!text) {
+        return "";
+      }
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}:\d{2})(?::\d{2})?)?$/);
+      if (!match) {
+        return text;
+      }
+      const datePart = `${Number(match[2])}月${Number(match[3])}日`;
+      return match[4] ? `${datePart} ${match[4]}` : datePart;
+    }
+
+    function parseMomentValue(value) {
+      const text = normalizeMomentText(value);
+      if (!text) {
+        return null;
+      }
+      const isoText = /^\d{4}-\d{2}-\d{2}$/.test(text)
+        ? `${text}T00:00:00`
+        : text.replace(" ", "T");
+      const probe = new Date(isoText);
+      return Number.isNaN(probe.getTime()) ? null : probe;
+    }
+
+    function getStageMomentText(item) {
+      return item?.actualMoment || item?.plannedMoment || "";
+    }
+
+    function buildClearanceMarker(schedule, stages) {
+      const status = pickText(schedule.importClearanceStatus, schedule.voyageStatus);
+      if (!status) {
+        return null;
+      }
+
+      const fallbackStart = stages.findIndex((item) => item.key === "departure");
+      const fallbackEnd = stages.findIndex((item) => item.key === "arrival");
+      const clearanceTime = normalizeMomentText(schedule.importClearanceTime);
+      const clearanceMoment = parseMomentValue(clearanceTime);
+      const knownMoments = stages
+        .map((item, index) => ({
+          index,
+          momentText: getStageMomentText(item),
+          moment: parseMomentValue(getStageMomentText(item)),
+        }))
+        .filter((item) => item.moment);
+
+      let startIndex = fallbackStart >= 0 ? fallbackStart : 0;
+      let endIndex = fallbackEnd >= 0 ? fallbackEnd : Math.min(stages.length - 1, startIndex + 1);
+
+      if (clearanceMoment && knownMoments.length >= 2) {
+        let previous = null;
+        let next = null;
+        for (const item of knownMoments) {
+          if (item.moment <= clearanceMoment) {
+            previous = item;
+          }
+          if (item.moment >= clearanceMoment) {
+            next = item;
+            break;
+          }
+        }
+        if (!previous) {
+          previous = knownMoments[0];
+          next = knownMoments[1] || next;
+        } else if (!next) {
+          next = knownMoments[knownMoments.length - 1];
+          previous = knownMoments[knownMoments.length - 2] || previous;
+        } else if (previous.index === next.index) {
+          next = knownMoments.find((item) => item.index > previous.index) || next;
+          if (previous.index === next.index) {
+            previous = [...knownMoments].reverse().find((item) => item.index < next.index) || previous;
+          }
+        }
+        if (previous && next && previous.index !== next.index) {
+          startIndex = Math.min(previous.index, next.index);
+          endIndex = Math.max(previous.index, next.index);
+        }
+      }
+
+      if (startIndex === endIndex) {
+        endIndex = Math.min(stages.length - 1, startIndex + 1);
+      }
+
+      return {
+        status,
+        timeLabel: formatMomentLabel(clearanceTime),
+        startIndex,
+        endIndex,
+      };
     }
 
     function getSegmentTone(labelPart) {
@@ -1026,6 +1205,7 @@
           done: toStageIndex >= 0 ? stages[toStageIndex].done : false
         };
       });
+      const clearanceMarker = buildClearanceMarker(schedule, stages);
 
       scheduleBoard.innerHTML = `
         ${segments.map((segment, index) => `
@@ -1035,6 +1215,12 @@
             <div class="schedule-segment-bottom">${renderSegmentToneHtml(segment.parts.bottom)}</div>
           </div>
         `).join("")}
+        ${clearanceMarker ? `
+          <div class="schedule-clearance-marker" style="grid-column:${clearanceMarker.startIndex + 2} / ${clearanceMarker.endIndex + 3}; grid-row:1;">
+            <div class="schedule-clearance-top">${renderSegmentToneHtml(clearanceMarker.status)}</div>
+            <div class="schedule-clearance-bottom">${clearanceMarker.timeLabel ? escapeHtml(clearanceMarker.timeLabel) : "&nbsp;"}</div>
+          </div>
+        ` : ""}
         ${stages.map((item, index) => `
           <div class="schedule-stage ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:1;">
             <div class="schedule-stage-card">
