@@ -691,7 +691,7 @@
     ];
     const SCHEDULE_SEGMENTS = [
       { from: "warehousing", to: "load", defaultLabel: "" },
-      { from: "load", to: "departure", defaultLabel: "报关放行 / 报关未放行", statusKey: "customsStatus" },
+      { from: "load", to: "departure", defaultLabel: "", statusKey: "customsStatus" },
       { from: "departure", to: "arrival", defaultLabel: "held / clean", statusKey: "voyageStatus" },
       { from: "arrival", to: "pickup", defaultLabel: "" },
       { from: "pickup", to: "unpack", defaultLabel: "" },
@@ -905,10 +905,10 @@
       if (!text) {
         return "";
       }
-      if (text.includes("未放行") || text.includes("held")) {
+      if (text.includes("未报关") || text.includes("未放行") || text.includes("held")) {
         return "is-negative";
       }
-      if (text.includes("已放行") || text.includes("clean")) {
+      if (text.includes("已报关") || text.includes("已放行") || text.includes("clean")) {
         return "is-positive";
       }
       return "";
