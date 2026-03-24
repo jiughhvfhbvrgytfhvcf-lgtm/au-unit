@@ -958,7 +958,12 @@
           register("actualUnpackDate", item.time);
           continue;
         }
-        if (info.includes("parcels successfully delivered") || info.includes("shipment despatched to courier")) {
+        const isDeliveredEvent =
+          info.includes("parcels successfully delivered") ||
+          info.includes("parcel delivered") ||
+          info.includes("shipment delivered") ||
+          info.includes("delivered successfully");
+        if (isDeliveredEvent) {
           register("actualDeliveryDate", item.time);
         }
       }
