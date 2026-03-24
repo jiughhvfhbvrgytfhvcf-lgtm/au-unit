@@ -788,8 +788,16 @@
       if (!text) {
         return "";
       }
-      const match = text.match(/\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?/);
-      return match ? match[0] : text;
+      const isoMatch = text.match(/\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?/);
+      if (isoMatch) {
+        return isoMatch[0];
+      }
+      const slashMatch = text.match(/\b(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}:\d{2}(?::\d{2})?))?\b/);
+      if (slashMatch) {
+        const [, day, month, year, timePart = ""] = slashMatch;
+        return `${year}-${month}-${day}${timePart ? ` ${timePart}` : ""}`;
+      }
+      return text;
     }
 
     function normalizeDateText(value) {
@@ -958,6 +966,10 @@
           register("actualUnpackDate", item.time);
           continue;
         }
+        const bookingTimeMatch = info.match(/booking time:\s*(\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)/i);
+        if (bookingTimeMatch) {
+          register("plannedDeliveryDate", bookingTimeMatch[1]);
+        }
         const isDeliveredEvent =
           info.includes("parcels successfully delivered") ||
           info.includes("parcel delivered") ||
@@ -1063,6 +1075,7 @@
         const plannedMoment = pickMomentText(
           apiSchedule[step.plannedKey],
           fallback[step.plannedKey],
+          timelineDerived[step.plannedKey],
           Array.isArray(apiSchedule.milestones)
             ? apiSchedule.milestones.find((item) => item?.key === step.plannedKey)?.date
             : ""
@@ -1113,11 +1126,15 @@
 
     function formatDisplayDate(value) {
       const text = normalizeDateText(value);
-      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!match) {
-        return text;
+      const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (isoMatch) {
+        return `${Number(isoMatch[2])}月${Number(isoMatch[3])}日`;
       }
-      return `${Number(match[2])}月${Number(match[3])}日`;
+      const slashMatch = String(value || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (slashMatch) {
+        return `${Number(slashMatch[2])}月${Number(slashMatch[1])}日`;
+      }
+      return text;
     }
 
     function formatMomentLabel(value) {
