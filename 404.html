@@ -3,6 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function() {
+      try {
+        var pathMatch = window.location.pathname.match(/^\/track\/([^/?#]+)\/?$/i);
+        if (!pathMatch) return;
+        var putCode = decodeURIComponent(pathMatch[1] || "").trim().toUpperCase();
+        if (!putCode) return;
+        window.sessionStorage.setItem("__ai_express_query_mode", "1");
+        var target = new URL("/", window.location.origin);
+        target.searchParams.set("putCode", putCode);
+        window.location.replace(target.toString());
+      } catch (_error) {
+        // Ignore redirect failures and let the page render normally.
+      }
+    })();
+  </script>
   <title>澳洲专线联盟 | AI-Express 智能物流</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -885,8 +901,22 @@
   <footer>联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
 
   <script>
-    const TRACK_API_URL = "https://api.ai-express.cn:8443/api/track";
-    const CHAT_API_URL = "https://api.ai-express.cn:8443/api/chat";
+    function resolveApiBaseUrl() {
+      try {
+        const url = new URL(window.location.href);
+        const hostname = (url.hostname || "").toLowerCase();
+        if (url.protocol !== "file:" && (hostname === "api.ai-express.cn" || hostname === "182-254-180-143.nip.io")) {
+          return url.origin;
+        }
+      } catch (_error) {
+        // Fallback to the public API host below.
+      }
+      return "https://api.ai-express.cn:8443";
+    }
+
+    const API_BASE_URL = resolveApiBaseUrl();
+    const TRACK_API_URL = `${API_BASE_URL}/api/track`;
+    const CHAT_API_URL = `${API_BASE_URL}/api/chat`;
 
     const searchBox = document.getElementById("searchBox");
     const searchBtn = document.getElementById("searchBtn");
@@ -956,12 +986,20 @@
       scheduleBoard.innerHTML = "";
     }
 
+    function getRouteBasePath(url) {
+      const pathname = (url.pathname || "").replace(/\/+$/, "") || "/";
+      if (pathname === "/site" || pathname.startsWith("/site/")) {
+        return "/site";
+      }
+      return "";
+    }
+
     function readPutCodeFromLocation(url) {
       const queryPutCode = (url.searchParams.get("putCode") || "").trim().toUpperCase();
       if (queryPutCode) {
         return queryPutCode;
       }
-      const pathMatch = url.pathname.match(/^\/track\/([^/?#]+)\/?$/i);
+      const pathMatch = url.pathname.match(/^(?:\/site)?\/track\/([^/?#]+)\/?$/i);
       if (!pathMatch) {
         return "";
       }
@@ -971,6 +1009,7 @@
     function updateUrlWithPutCode(putCode) {
       try {
         const url = new URL(window.location.href);
+        const routeBasePath = getRouteBasePath(url);
         if (url.protocol === "file:") {
           if (putCode) {
             url.searchParams.set("putCode", putCode);
@@ -979,10 +1018,10 @@
           }
         } else {
           if (putCode) {
-            url.pathname = `/track/${encodeURIComponent(putCode)}`;
+            url.pathname = `${routeBasePath}/track/${encodeURIComponent(putCode)}`;
             url.searchParams.delete("putCode");
           } else {
-            url.pathname = "/";
+            url.pathname = routeBasePath ? `${routeBasePath}/` : "/";
             url.searchParams.delete("putCode");
           }
         }
