@@ -22,12 +22,32 @@
       align-items: center;
       padding: 24px 24px 0;
       gap: 14px;
+      flex-wrap: wrap;
     }
     header a {
       color: #6a7283;
       text-decoration: none;
       font-size: 14px;
       font-weight: 600;
+    }
+    .nav-portal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 43, 127, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+      color: #002b7f;
+      font-weight: 700;
+    }
+    .nav-portal-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #002b7f 0%, #0e63e9 100%);
+      box-shadow: 0 0 0 5px rgba(0, 43, 127, 0.08);
+      flex: 0 0 auto;
     }
     .nav-login-btn {
       background: #002b7f;
@@ -778,38 +798,15 @@
 <body>
   <header>
     <a href="javascript:void(0)" onclick="alert('价格预算页面暂未接入。')">价格预算</a>
+    <a class="nav-portal-link" href="https://lala.ai-express.cn" title="进入 Aulala 登录页">
+      <span class="nav-portal-dot" aria-hidden="true"></span>
+      <span>Aulala</span>
+    </a>
     <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a>
   </header>
 
   <main>
-    <div class="portal-layout">
-      <aside class="portal-side" aria-label="联盟业务入口">
-        <div class="portal-side-card">
-          <div class="portal-side-eyebrow">Alliance Portals</div>
-          <div class="portal-side-title">业务入口</div>
-          <div class="portal-side-copy">左侧入口用于进入联盟内部系统登录页。从这里点击 Aulala，会先进入对应账号密码登录界面。</div>
-          <div class="portal-menu">
-            <a class="portal-link portal-link-aulala" href="https://lala.ai-express.cn" title="进入 Aulala 登录页">
-              <span class="portal-link-logo" aria-hidden="true">
-                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="15" cy="13" r="4" fill="#FFCF56"/>
-                  <circle cx="30" cy="12" r="4" fill="#8AD7FF"/>
-                  <circle cx="35" cy="28" r="4" fill="#FFFFFF"/>
-                  <path d="M15 13L30 12L35 28" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 30C15.8 24.8 21 22 27.6 22C33.2 22 37.1 24.3 39 29" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round"/>
-                </svg>
-              </span>
-              <span class="portal-link-meta">
-                <span class="portal-link-name">Aulala</span>
-                <span class="portal-link-desc">点击进入 Aulala 登录页</span>
-              </span>
-              <span class="portal-link-arrow" aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </div>
-      </aside>
-
-      <div class="portal-content">
+    <div class="portal-content">
         <div class="logo-container">
           <div class="logo-main"><span class="blue">澳洲</span><span class="gold">专线联盟</span></div>
           <div class="logo-sub">AI-EXPRESS ALLIANCE</div>
@@ -848,7 +845,6 @@
           </div>
         </section>
       </div>
-    </div>
   </main>
 
   <button id="chatFab" class="chat-fab" type="button" aria-label="打开官网客服">💬</button>
