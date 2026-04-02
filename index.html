@@ -1199,10 +1199,24 @@
         return "";
       }
       const lower = text.toLowerCase();
-      if (lower.includes("clearance processing complete") || /\bclean\b/.test(lower)) {
+      if (lower.includes("held for processing")) {
+        return "";
+      }
+      if (
+        lower === "clean" ||
+        text === "已放行" ||
+        lower.includes("clearance processing complete") ||
+        lower.includes("customs cleared") ||
+        lower.includes("clearance complete")
+      ) {
         return "clean";
       }
-      if (lower.includes("customs held") || /\bheld\b/.test(lower)) {
+      if (
+        lower === "held" ||
+        lower.includes("customs held") ||
+        lower.includes("held at customs") ||
+        lower.includes("clearance held")
+      ) {
         return "held";
       }
       if (text.includes("清关中") || lower.includes("clearance in progress") || lower.includes("clearance pending") || lower.includes("processing customs")) {
