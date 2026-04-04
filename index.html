@@ -675,6 +675,15 @@
       color: #7b8397;
       font-size: 12px;
     }
+    .footer-link {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(123, 131, 151, 0.35);
+    }
+    .footer-link:hover {
+      color: #2546a8;
+      border-bottom-color: rgba(37, 70, 168, 0.45);
+    }
     @media (max-width: 640px) {
       header {
         padding: 18px 16px 0;
@@ -864,7 +873,7 @@
     </div>
   </aside>
 
-  <footer>联盟总部：悉尼 | 官方域名：ai-express.cn</footer>
+  <footer>联盟总部：悉尼 | <a class="footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">粤ICP备2023065947号-1</a></footer>
 
   <script>
     function resolveApiBaseUrl() {
@@ -883,6 +892,9 @@
     const API_BASE_URL = resolveApiBaseUrl();
     const TRACK_API_URL = `${API_BASE_URL}/api/track`;
     const CHAT_API_URL = `${API_BASE_URL}/api/chat`;
+    const DEFAULT_TRACK_LOADING_TEXT = "正在从腾讯云调取轨迹信息，请稍候...";
+    const TRACK_AUTO_POLL_INTERVAL_MS = 3000;
+    const TRACK_AUTO_POLL_MAX_ATTEMPTS = 10;
 
     const searchBox = document.getElementById("searchBox");
     const searchBtn = document.getElementById("searchBtn");
@@ -933,6 +945,9 @@
     }
 
     function setLoading(isLoading) {
+      if (isLoading && !loading.textContent.trim()) {
+        loading.textContent = DEFAULT_TRACK_LOADING_TEXT;
+      }
       loading.style.display = isLoading ? "block" : "none";
       searchBtn.disabled = isLoading;
     }
@@ -945,6 +960,14 @@
     function clearError() {
       errorBox.textContent = "";
       errorBox.style.display = "none";
+    }
+
+    function setLoadingMessage(message) {
+      loading.textContent = String(message || "").trim() || DEFAULT_TRACK_LOADING_TEXT;
+    }
+
+    function resetLoadingMessage() {
+      loading.textContent = DEFAULT_TRACK_LOADING_TEXT;
     }
 
     function hideSchedule() {
@@ -1746,6 +1769,49 @@
       scheduleSection.style.display = "block";
     }
 
+    async function requestTrackPayload(putCode) {
+      const response = await fetch(TRACK_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ putCode })
+      });
+      const rawBody = await response.text();
+      let payload = null;
+      try {
+        payload = rawBody ? JSON.parse(rawBody) : {};
+      } catch (_error) {
+        throw new Error("查询接口返回了页面内容，请检查 api.ai-express.cn 的 HTTPS 与 /api/track 配置");
+      }
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload?.error?.message || payload?.error || `查询失败 (${response.status})`);
+      }
+      return payload;
+    }
+
+    function shouldAutoPollTrack(payload) {
+      return payload?.pendingRefresh === true;
+    }
+
+    async function fetchTrackPayloadWithAutoPoll(putCode) {
+      let payload = await requestTrackPayload(putCode);
+      if (!shouldAutoPollTrack(payload)) {
+        return payload;
+      }
+
+      for (let attempt = 1; attempt <= TRACK_AUTO_POLL_MAX_ATTEMPTS; attempt += 1) {
+        setLoadingMessage(`官网轨迹正在后台刷新，正在自动获取第 ${attempt}/${TRACK_AUTO_POLL_MAX_ATTEMPTS} 次结果，请稍候...`);
+        await new Promise((resolve) => window.setTimeout(resolve, TRACK_AUTO_POLL_INTERVAL_MS));
+        payload = await requestTrackPayload(putCode);
+        if (!shouldAutoPollTrack(payload)) {
+          return payload;
+        }
+      }
+
+      return payload;
+    }
+
     async function handleSearch() {
       const putCode = searchBox.value.trim().toUpperCase();
       if (!putCode) {
@@ -1755,6 +1821,7 @@
 
       updateUrlWithPutCode(putCode);
       clearError();
+      resetLoadingMessage();
       setLoading(true);
       resultContainer.style.display = "none";
       hideSchedule();
@@ -1762,23 +1829,7 @@
       resSummary.textContent = "";
 
       try {
-        const response = await fetch(TRACK_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ putCode })
-        });
-        const rawBody = await response.text();
-        let payload = null;
-        try {
-          payload = rawBody ? JSON.parse(rawBody) : {};
-        } catch (_error) {
-          throw new Error("查询接口返回了页面内容，请检查 api.ai-express.cn 的 HTTPS 与 /api/track 配置");
-        }
-        if (!response.ok || !payload.ok) {
-          throw new Error(payload?.error?.message || `查询失败 (${response.status})`);
-        }
+        const payload = await fetchTrackPayloadWithAutoPoll(putCode);
 
         resTitle.textContent = `${payload.putCode} 轨迹结果`;
         const timeline = Array.isArray(payload.timeline) ? payload.timeline : [];
@@ -1790,6 +1841,7 @@
         hideSchedule();
         showError(error.message || "连接腾讯云查询服务失败");
       } finally {
+        resetLoadingMessage();
         setLoading(false);
       }
     }
@@ -1798,3 +1850,4 @@
   </script>
 </body>
 </html>
+
