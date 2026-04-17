@@ -1,4 +1,1210 @@
-<!DOCTYPE html>
+    color: #1a2235;
+      white-space: pre-wrap;
+    }
+    .error-box {
+      display: none;
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fff2f2;
+      border: 1px solid #ffd2d2;
+      color: #9d2f2f;
+      font-size: 14px;
+    }
+    footer {
+      padding: 22px;
+      text-align: center;
+      color: #7b8397;
+      font-size: 12px;
+    }
+    .footer-link {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(123, 131, 151, 0.35);
+    }
+    .footer-link:hover {
+      color: #2546a8;
+      border-bottom-color: rgba(37, 70, 168, 0.45);
+    }
+    @media (max-width: 640px) {
+      header {
+        padding: 18px 16px 0;
+      }
+      main {
+        width: min(100%, calc(100vw - 24px));
+      }
+      .portal-layout {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+      .portal-side {
+        position: static;
+      }
+      .portal-side-card {
+        padding: 16px;
+        border-radius: 20px;
+      }
+      .portal-side-copy {
+        display: none;
+      }
+      .portal-menu {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .portal-link {
+        grid-template-columns: 44px minmax(0, 1fr);
+        padding: 12px;
+      }
+      .portal-link-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 15px;
+      }
+      .portal-link-logo svg {
+        width: 28px;
+        height: 28px;
+      }
+      .portal-link-arrow {
+        display: none;
+      }
+      .search-card,
+      .result-card {
+        padding: 18px;
+        border-radius: 20px;
+      }
+      .search-input {
+        height: 58px;
+        padding-right: 114px;
+      }
+      .flag-search-btn {
+        padding: 0 12px;
+      }
+      .schedule-board {
+        grid-template-columns: 58px repeat(7, minmax(0, 1fr));
+        column-gap: 6px;
+        row-gap: 8px;
+      }
+      .schedule-segment {
+        min-height: 90px;
+      }
+      .schedule-segment-top,
+      .schedule-segment-bottom {
+        min-height: 14px;
+        font-size: 9px;
+      }
+      .schedule-segment-top {
+        margin-bottom: 6px;
+      }
+      .schedule-segment-bottom {
+        margin-top: 6px;
+      }
+      .schedule-segment-line {
+        width: calc(100% - 16px);
+      }
+      .schedule-stage-card {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        margin-bottom: 6px;
+      }
+      .schedule-stage-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 9px;
+        font-size: 16px;
+      }
+      .schedule-stage-label {
+        font-size: 11px;
+      }
+      .schedule-row-title {
+        min-height: 40px;
+        font-size: 11px;
+      }
+      .schedule-time-cell {
+        min-height: 40px;
+        font-size: 11px;
+        padding: 6px 3px;
+      }
+      .chat-fab {
+        top: auto;
+        bottom: 18px;
+        right: 18px;
+        transform: none;
+        width: 64px;
+        height: 64px;
+        font-size: 26px;
+      }
+      .chat-panel {
+        top: auto;
+        right: 12px;
+        bottom: 96px;
+        transform: none;
+        width: calc(100vw - 24px);
+        height: min(560px, calc(100vh - 120px));
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="javascript:void(0)" onclick="alert('价格预算页面暂未接入。')">价格预算</a>
+    <a class="nav-portal-link" href="https://lala.ai-express.cn" title="进入 Aulala 登录页">
+      <span class="nav-portal-dot" aria-hidden="true"></span>
+      <span>Aulala</span>
+    </a>
+    <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a>
+  </header>
+
+  <main>
+    <div class="portal-content">
+        <div class="logo-container">
+          <div class="logo-main"><span class="blue">澳洲</span><span class="gold">专线联盟</span></div>
+          <div class="logo-sub">AI-EXPRESS ALLIANCE</div>
+        </div>
+
+        <section class="search-card">
+          <div class="search-wrapper">
+            <input
+              id="searchBox"
+              class="search-input"
+              type="text"
+              placeholder="输入入仓号查询轨迹 (如: MY06001294AU3)"
+            >
+            <button id="searchBtn" class="flag-search-btn" type="button" onclick="handleSearch()">
+              <span class="flag-image"></span>
+              <span>查询</span>
+            </button>
+          </div>
+          <div id="loading">正在从腾讯云调取轨迹信息，请稍候...</div>
+          <div id="errorBox" class="error-box"></div>
+        </section>
+
+        <section id="result-container">
+          <div id="schedule-section" class="result-card schedule-panel" style="display:none;">
+            <div class="schedule-board-wrap">
+              <div id="schedule-board" class="schedule-board"></div>
+            </div>
+          </div>
+
+          <div class="result-card track-panel">
+            <div class="track-header">
+              <h4 id="res-title">查询结果</h4>
+              <div id="res-summary" class="track-summary"></div>
+            </div>
+            <ul id="track-list" class="timeline"></ul>
+          </div>
+        </section>
+      </div>
+  </main>
+
+  <button id="chatFab" class="chat-fab" type="button" aria-label="打开官网客服">💬</button>
+  <aside id="chatPanel" class="chat-panel" aria-hidden="true">
+    <div class="chat-header">
+      <div class="chat-header-title">AI 智能客服</div>
+      <button id="chatClose" class="chat-close" type="button" aria-label="关闭客服">✕</button>
+    </div>
+    <div id="chatBody" class="chat-body">
+      <div class="chat-message bot">您好！我是澳洲专线联盟官网客服。查轨迹建议直接用上方查询框；有其他疑问可以直接和我说。</div>
+    </div>
+    <div class="chat-footer">
+      <form id="chatForm" class="chat-form">
+        <input id="chatInput" class="chat-input" type="text" placeholder="输入问题..." maxlength="1000">
+        <button id="chatSend" class="chat-send" type="submit">发送</button>
+      </form>
+    </div>
+  </aside>
+
+  <footer>联盟总部：悉尼 | <a class="footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">粤ICP备2023065947号-1</a></footer>
+
+  <script>
+    function resolveApiBaseUrl() {
+      try {
+        const url = new URL(window.location.href);
+        const hostname = (url.hostname || "").toLowerCase();
+        if (
+          url.protocol !== "file:" &&
+          (
+            hostname === "51fahuo.cn" ||
+            hostname === "www.51fahuo.cn" ||
+            hostname === "api.ai-express.cn" ||
+            hostname === "182-254-180-143.nip.io"
+          )
+        ) {
+          return url.origin;
+        }
+        if (url.protocol !== "file:" && (hostname === "ai-express.cn" || hostname === "www.ai-express.cn")) {
+          return "https://51fahuo.cn";
+        }
+      } catch (_error) {
+        // Fallback to the public API host below.
+      }
+      return "https://51fahuo.cn";
+    }
+
+    const API_BASE_URL = resolveApiBaseUrl();
+    const TRACK_API_URL = `${API_BASE_URL}/api/track`;
+    const CHAT_API_URL = `${API_BASE_URL}/api/chat`;
+    const DEFAULT_TRACK_LOADING_TEXT = "正在从腾讯云调取轨迹信息，请稍候...";
+    const TRACK_AUTO_POLL_INTERVAL_MS = 3000;
+    const TRACK_AUTO_POLL_MAX_ATTEMPTS = 10;
+
+ById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const chatSend = document.getElementById("chatSend");
+    const SCHEDULE_STEPS = [
+      { key: "warehousing", label: "入库", icon: "&#127970;", plannedKey: "planJoinDate", actualKey: "actualJoinDate" },
+      { key: "load", label: "装柜", icon: "&#128230;", plannedKey: "plannedLoadDate", actualKey: "actualLoadDate" },
+      { key: "departure", label: "离港", icon: "&#9992;&#65039;", plannedKey: "plannedDepartureDate", actualKey: "actualDepartureDate" },
+      { key: "arrival", label: "到港", icon: "&#128748;", plannedKey: "plannedArrivalDate", actualKey: "actualArrivalDate" },
+      { key: "pickup", label: "提柜", icon: "&#128666;", plannedKey: "plannedPickupDate", actualKey: "actualPickupDate" },
+      { key: "unpack", label: "拆柜", icon: "&#128736;&#65039;", plannedKey: "plannedUnpackDate", actualKey: "actualUnpackDate" },
+      { key: "delivery", label: "派送", icon: "&#9989;", plannedKey: "plannedDeliveryDate", actualKey: "actualDeliveryDate" }
+    ];
+    const SCHEDULE_SEGMENTS = [
+      { from: "warehousing", to: "load", defaultLabel: "" },
+      { from: "load", to: "departure", defaultLabel: "", statusKey: "customsStatus" },
+      { from: "departure", to: "arrival", defaultLabel: "" },
+      { from: "arrival", to: "pickup", defaultLabel: "" },
+      { from: "pickup", to: "unpack", defaultLabel: "" },
+      { from: "unpack", to: "delivery", defaultLabel: "" }
+    ];
+
+    searchBox.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        handleSearch();
+      }
+    });
+    chatFab.addEventListener("click", openChatPanel);
+    chatClose.addEventListener("click", closeChatPanel);
+    chatForm.addEventListener("submit", handleChatSubmit);
+
+    function loginToERP() {
+      window.location.href = "http://121.196.233.99";
+    }
+
+    function setLoading(isLoading) {
+      if (isLoading && !loading.textContent.trim()) {
+        loading.textContent = DEFAULT_TRACK_LOADING_TEXT;
+      }
+      loading.style.display = isLoading ? "block" : "none";
+      searchBtn.disabled = isLoading;
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function setLoadingMessage(message) {
+      loading.textContent = String(message || "").trim() || DEFAULT_TRACK_LOADING_TEXT;
+    }
+
+    function resetLoadingMessage() {
+      loading.textContent = DEFAULT_TRACK_LOADING_TEXT;
+    }
+
+    function hideSchedule() {
+      scheduleSection.style.display = "none";
+      scheduleBoard.innerHTML = "";
+    }
+
+    function getRouteBasePath(url) {
+      const pathname = (url.pathname || "").replace(/\/+$/, "") || "/";
+      if (pathname === "/site" || pathname.startsWith("/site/")) {
+        return "/site";
+      }
+      return "";
+    }
+
+    function readPutCodeFromLocation(url) {
+      const queryPutCode = (url.searchParams.get("putCode") || "").trim().toUpperCase();
+      if (queryPutCode) {
+        return queryPutCode;
+      }
+      const pathMatch = url.pathname.match(/^(?:\/site)?\/track\/([^/?#]+)\/?$/i);
+      if (!pathMatch) {
+        return "";
+      }
+      return decodeURIComponent(pathMatch[1] || "").trim().toUpperCase();
+    }
+
+    function shouldKeepQueryMode(url) {
+      if (url.protocol === "file:") {
+        return true;
+      }
+      if (url.searchParams.has("putCode")) {
+        return true;
+      }
+      try {
+        return window.sessionStorage.getItem("__ai_express_query_mode") === "1";
+      } catch (_error) {
+        return false;
+      }
+    }
+
+    function updateUrlWithPutCode(putCode) {
+      try {
+        const url = new URL(window.location.href);
+        const routeBasePath = getRouteBasePath(url);
+        if (shouldKeepQueryMode(url)) {
+          if (putCode) {
+            url.searchParams.set("putCode", putCode);
+          } else {
+            url.searchParams.delete("putCode");
+          }
+          if (routeBasePath) {
+            url.pathname = `${routeBasePath}/`;
+          } else {
+            url.pathname = "/";
+          }
+        } else {
+          if (putCode) {
+            url.pathname = `${routeBasePath}/track/${encodeURIComponent(putCode)}`;
+            url.searchParams.delete("putCode");
+          } else {
+            url.pathname = routeBasePath ? `${routeBasePath}/` : "/";
+            url.searchParams.delete("putCode");
+          }
+        }
+        window.history.replaceState({}, "", url.toString());
+      } catch (_error) {
+        // Ignore URL update failures in older browsers or restricted contexts.
+      }
+    }
+
+    function initializeSearchFromLocation() {
+      try {
+        const url = new URL(window.location.href);
+        const putCode = readPutCodeFromLocation(url);
+        if (!putCode) {
+          return;
+        }
+        if (url.searchParams.has("putCode")) {
+          try {
+            window.sessionStorage.setItem("__ai_express_query_mode", "1");
+          } catch (_error) {
+            // Ignore sessionStorage failures and keep the page usable.
+          }
+        }
+        searchBox.value = putCode;
+        window.setTimeout(() => handleSearch(), 80);
+      } catch (_error) {
+        // Ignore malformed URL state and keep the page usable.
+      }
+    }
+
+    function renderTimeline(replyText, timeline) {
+      const items = Array.isArray(timeline) ? timeline : [];
+      if (!items.length) {
+        trackList.innerHTML = `<li class="timeline-item latest"><div class="context">${escapeHtml(replyText || "暂无轨迹信息")}</div></li>`;
+        return;
+      }
+      trackList.innerHTML = items.map((item, index) => `
+        <li class="timeline-item ${index === 0 ? "latest" : ""}">
+          <div class="time">${escapeHtml(item.time || "")}</div>
+          <div class="context">${escapeHtml(item.info || "")}</div>
+        </li>
+      `).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function normalizeMomentText(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const isoMatch = text.match(/\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?/);
+      if (isoMatch) {
+        return isoMatch[0];
+      }
+      const slashMatch = text.match(/\b(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}:\d{2}(?::\d{2})?))?\b/);
+      if (slashMatch) {
+        const [, day, month, year, timePart = ""] = slashMatch;
+        return `${year}-${month}-${day}${timePart ? ` ${timePart}` : ""}`;
+      }
+      return text;
+    }
+
+    function normalizeDateText(value) {
+      const text = normalizeMomentText(value);
+      if (!text) {
+        return "";
+      }
+      const match = text.match(/\d{4}-\d{2}-\d{2}/);
+      return match ? match[0] : text;
+    }
+
+Date",
+        "计划提柜日期": "plannedPickupDate",
+        "计划提柜时间": "plannedPickupDate",
+        "实际提货日期": "actualPickupDate",
+        "实际提货时间": "actualPickupDate",
+        "实际提柜日期": "actualPickupDate",
+        "实际提柜时间": "actualPickupDate",
+        "实际拆柜日期": "actualUnpackDate",
+        "实际拆柜时间": "actualUnpackDate",
+        "计划拆柜日期": "plannedUnpackDate",
+        "计划拆柜时间": "plannedUnpackDate",
+        "计划派送日期": "plannedDeliveryDate",
+        "计划派送时间": "plannedDeliveryDate",
+        "实际派送日期": "actualDeliveryDate",
+        "实际派送时间": "actualDeliveryDate",
+        "实际签收日期": "actualDeliveryDate",
+        "实际签收时间": "actualDeliveryDate",
+        "进口清关日期": "importClearanceTime",
+        "进口清关时间": "importClearanceTime",
+        "清关日期": "importClearanceTime",
+        "清关时间": "importClearanceTime",
+        "进口清关状态": "importClearanceStatus",
+        "清关状态": "importClearanceStatus",
+        "报关状态": "customsStatus",
+        "报关放行状态": "customsStatus",
+        "航程状态": "voyageStatus",
+        "海运状态": "voyageStatus"
+      };
+      const textKeys = new Set([
+        "crowdfundCode",
+        "crowdfundName",
+        "customsStatus",
+        "voyageStatus",
+        "importClearanceStatus",
+      ]);
+      const lines = String(replyText || "").split("\n");
+      for (const line of lines) {
+        const match = line.trim().match(/^([^:：]+)[:：]\s*(.+)$/);
+        if (!match) {
+          continue;
+        }
+        const key = mapping[match[1].trim()];
+        if (!key) {
+          continue;
+        }
+        result[key] = textKeys.has(key)
+          ? match[2].trim()
+          : normalizeMomentText(match[2]);
+      }
+      return result;
+    }
+
+    function parseTimelineEntriesFromReplyText(replyText) {
+      const items = [];
+      for (const rawLine of String(replyText || "").split("\n")) {
+        const cleaned = rawLine.trim().replace(/^[-·•]+\s*/, "");
+        if (!cleaned) {
+          continue;
+        }
+        const match = cleaned.match(/^(\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)\s*\|\s*(.+)$/);
+        if (!match) {
+          continue;
+        }
+        items.push({
+          time: match[1].trim(),
+          info: match[2].trim(),
+        });
+      }
+      return items;
+    }
+
+    function pickText(...values) {
+      for (const value of values) {
+        const text = String(value || "").trim();
+        if (text) {
+          return text;
+        }
+      }
+      return "";
+    }
+
+    function classifyClearanceStatus(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const lower = text.toLowerCase();
+      if (lower.includes("held for processing")) {
+        return "";
+      }
+      if (
+        lower === "clean" ||
+        text === "已放行" ||
+        lower.includes("clearance processing complete") ||
+        lower.includes("customs cleared") ||
+        lower.includes("clearance complete")
+      ) {
+        return "clean";
+      }
+      if (
+        lower === "held" ||
+        lower.includes("customs held") ||
+        lower.includes("held at customs") ||
+        lower.includes("clearance held")
+      ) {
+        return "held";
+      }
+      if (text.includes("清关中") || lower.includes("clearance in progress") || lower.includes("clearance pending") || lower.includes("processing customs")) {
+        return "清关中";
+      }
+      return "";
+    }
+
+    function deriveStageMomentsFromTimeline(payload) {
+      const timelineEntries = Array.isArray(payload?.timeline) && payload.timeline.length
+        ? payload.timeline
+        : parseTimelineEntriesFromReplyText(payload?.replyText || "");
+      const derived = {};
+
+      const register = (key, timeValue) => {
+        const momentText = normalizeMomentText(timeValue);
+        if (!momentText || derived[key]) {
+          return;
+        }
+        derived[key] = momentText;
+      };
+
+      for (const item of timelineEntries) {
+        const info = String(item?.info || "").trim().toLowerCase();
+        if (!info) {
+          continue;
+        }
+        if (info.includes("flight dispatched")) {
+          register("actualDepartureDate", item.time);
+          continue;
+        }
+        if (info.includes("flight arrived")) {
+          register("actualArrivalDate", item.time);
+          continue;
+        }
+        if (info.includes("arrived at warehouse")) {
+          register("actualPickupDate", item.time);
+          continue;
+        }
+        if (info.includes("deconsolidation has been done")) {
+          register("actualUnpackDate", item.time);
+          continue;
+        }
+        const bookingTimeMatch = info.match(/booking time:\s*(\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)/i);
+        if (bookingTimeMatch) {
+          register("plannedDeliveryDate", bookingTimeMatch[1]);
+        }
+        const isDeliveredEvent =
+          info.includes("parcels successfully delivered") ||
+          info.includes("parcel delivered") ||
+          info.includes("shipment delivered") ||
+          info.includes("delivered successfully");
+        if (isDeliveredEvent) {
+          register("actualDeliveryDate", item.time);
+        }
+      }
+
+      return derived;
+    }
+
+    function chooseClearanceSignals(payload, fallback) {
+      const candidates = [];
+      const pushCandidate = (timeValue, statusValue, source) => {
+        const status = classifyClearanceStatus(statusValue);
+        if (!status) {
+          return;
+        }
+        const momentText = normalizeMomentText(timeValue);
+        candidates.push({
+          source,
+          status,
+          momentText,
+          moment: parseMomentValue(momentText),
+        });
+      };
+
+      pushCandidate(
+        payload?.planSchedule?.importClearanceTime || payload?.planSchedule?.importClearanceDate,
+        payload?.planSchedule?.importClearanceStatus,
+        "api"
+      );
+      pushCandidate(fallback.importClearanceTime, fallback.importClearanceStatus, "reply");
+
+      const timelineEntries = Array.isArray(payload?.timeline) && payload.timeline.length
+        ? payload.timeline
+        : parseTimelineEntriesFromReplyText(payload?.replyText || "");
+      for (const item of timelineEntries) {
+        pushCandidate(item?.time, item?.info, "timeline");
+      }
+
+      const bestByStatus = new Map();
+      for (const item of candidates) {
+        const current = bestByStatus.get(item.status);
+        if (!current) {
+          bestByStatus.set(item.status, item);
+          continue;
+        }
+        if (item.moment && !current.moment) {
+          bestByStatus.set(item.status, item);
+          continue;
+        }
+        if (item.moment && current.moment && item.moment > current.moment) {
+          bestByStatus.set(item.status, item);
+        }
+      }
+
+      return Array.from(bestByStatus.values()).sort((a, b) => {
+        if (a.moment && b.moment) {
+          return a.moment - b.moment;
+        }
+        if (a.moment) {
+          return -1;
+        }
+        if (b.moment) {
+          return 1;
+        }
+        return a.status.localeCompare(b.status);
+      });
+    }
+
+    function hasMomentTime(value) {
+      return /\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(normalizeMomentText(value));
+    }
+
+    function pickMomentText(...values) {
+      let fallback = "";
+      for (const value of values) {
+        const text = normalizeMomentText(value);
+        if (!text) {
+          continue;
+        }
+        if (hasMomentTime(text)) {
+          return text;
+        }
+        if (!fallback) {
+          fallback = text;
+        }
+      }
+      return fallback;
+    }
+
+kMomentText(
+          apiSchedule[step.plannedKey],
+          fallback[step.plannedKey],
+          timelineDerived[step.plannedKey],
+          Array.isArray(apiSchedule.milestones)
+            ? apiSchedule.milestones.find((item) => item?.key === step.plannedKey)?.date
+            : ""
+        );
+        const actualMoment = pickMomentText(
+          apiSchedule[step.actualKey],
+          fallback[step.actualKey],
+          timelineDerived[step.actualKey],
+          Array.isArray(apiSchedule.milestones)
+            ? apiSchedule.milestones.find((item) => item?.key === step.actualKey)?.date
+            : ""
+        );
+        return {
+          ...step,
+          plannedMoment,
+          actualMoment,
+          plannedDate: normalizeDateText(plannedMoment),
+          actualDate: normalizeDateText(actualMoment),
+        };
+      });
+      return {
+        crowdfundCode: pickText(apiSchedule.crowdfundCode, fallback.crowdfundCode),
+        crowdfundName: pickText(apiSchedule.crowdfundName, fallback.crowdfundName),
+        planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
+        customsStatus: pickText(apiSchedule.customsStatus, fallback.customsStatus),
+        voyageStatus: pickText(apiSchedule.voyageStatus, fallback.voyageStatus),
+        importClearanceSignals: clearanceSignals,
+        stages,
+        hasAnyDate: stages.some((item) => item.plannedDate || item.actualDate)
+      };
+    }
+
+    function isScheduleStageDone(item) {
+      if (item?.actualDate) {
+        return true;
+      }
+      if (!item?.plannedDate) {
+        return false;
+      }
+      const probe = new Date(`${item.plannedDate}T00:00:00`);
+      if (Number.isNaN(probe.getTime())) {
+        return false;
+      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return probe.getTime() <= today.getTime();
+    }
+
+    function formatDisplayDate(value) {
+      const text = normalizeDateText(value);
+      const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (isoMatch) {
+        return `${Number(isoMatch[2])}月${Number(isoMatch[3])}日`;
+      }
+      const slashMatch = String(value || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (slashMatch) {
+        return `${Number(slashMatch[2])}月${Number(slashMatch[1])}日`;
+      }
+      return text;
+    }
+
+    function formatMomentLabel(value) {
+      const text = normalizeMomentText(value);
+      if (!text) {
+        return "";
+      }
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}:\d{2})(?::\d{2})?)?$/);
+      if (!match) {
+        return text;
+      }
+      const datePart = `${Number(match[2])}月${Number(match[3])}日`;
+      return match[4] ? `${datePart} ${match[4]}` : datePart;
+    }
+
+    function normalizeSingleStatusLabel(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const lower = text.toLowerCase();
+      if (lower.includes("held")) {
+        return "held";
+      }
+      if (lower.includes("clean")) {
+        return "clean";
+      }
+      if (text.includes("清关中")) {
+        return "清关中";
+      }
+      if (text.includes("未报关")) {
+        return "未报关";
+      }
+      if (text.includes("已报关")) {
+        return "已报关";
+      }
+      return text.split("/")[0].trim();
+    }
+
+    function parseMomentValue(value) {
+      const text = normalizeMomentText(value);
+      if (!text) {
+        return null;
+      }
+      const isoText = /^\d{4}-\d{2}-\d{2}$/.test(text)
+        ? `${text}T00:00:00`
+        : text.replace(" ", "T");
+      const probe = new Date(isoText);
+      return Number.isNaN(probe.getTime()) ? null : probe;
+    }
+
+    function getStageMomentText(item) {
+      return item?.actualMoment || item?.plannedMoment || "";
+    }
+
+    function buildClearanceMarker(signal, stages) {
+      const status = normalizeSingleStatusLabel(signal?.status);
+      if (!status) {
+        return null;
+      }
+
+      const fallbackStart = stages.findIndex((item) => item.key === "departure");
+      const fallbackEnd = stages.findIndex((item) => item.key === "arrival");
+      const clearanceTime = normalizeMomentText(signal?.momentText);
+      const clearanceMoment = parseMomentValue(clearanceTime);
+      const knownMoments = stages
+        .map((item, index) => ({
+          index,
+          momentText: getStageMomentText(item),
+          moment: parseMomentValue(getStageMomentText(item)),
+        }))
+        .filter((item) => item.moment);
+
+      let startIndex = fallbackStart >= 0 ? fallbackStart : 0;
+      let endIndex = fallbackEnd >= 0 ? fallbackEnd : Math.min(stages.length - 1, startIndex + 1);
+
+      if (clearanceMoment && knownMoments.length >= 2) {
+        let previous = null;
+        let next = null;
+        for (const item of knownMoments) {
+          if (item.moment <= clearanceMoment) {
+            previous = item;
+          }
+          if (item.moment >= clearanceMoment) {
+            next = item;
+            break;
+          }
+        }
+        if (!previous) {
+          previous = knownMoments[0];
+          next = knownMoments[1] || next;
+        } else if (!next) {
+          next = knownMoments[knownMoments.length - 1];
+          previous = knownMoments[knownMoments.length - 2] || previous;
+        } else if (previous.index === next.index) {
+          next = knownMoments.find((item) => item.index > previous.index) || next;
+          if (previous.index === next.index) {
+            previous = [...knownMoments].reverse().find((item) => item.index < next.index) || previous;
+          }
+        }
+        if (previous && next && previous.index !== next.index) {
+          startIndex = Math.min(previous.index, next.index);
+          endIndex = Math.max(previous.index, next.index);
+        }
+      }
+
+      if (startIndex === endIndex) {
+        endIndex = Math.min(stages.length - 1, startIndex + 1);
+      }
+
+      return {
+        status,
+        timeLabel: formatMomentLabel(clearanceTime),
+        startIndex,
+        endIndex,
+      };
+    }
+
+    function buildClearanceMarkers(schedule, stages) {
+      const rawSignals = Array.isArray(schedule.importClearanceSignals)
+        ? schedule.importClearanceSignals
+        : [];
+      const markers = rawSignals
+        .map((signal) => buildClearanceMarker(signal, stages))
+        .filter(Boolean)
+        .sort((a, b) => a.startIndex - b.startIndex || a.endIndex - b.endIndex || a.status.localeCompare(b.status));
+
+      if (markers.length >= 2) {
+        const heldMarker = markers.find((item) => item.status === "held");
+        const cleanMarker = markers.find((item) => item.status === "clean");
+        if (
+          heldMarker &&
+          cleanMarker &&
+          heldMarker.startIndex === cleanMarker.startIndex &&
+          heldMarker.endIndex === cleanMarker.endIndex
+        ) {
+          const nextStart = Math.min(stages.length - 2, cleanMarker.startIndex + 1);
+          const nextEnd = Math.min(stages.length - 1, cleanMarker.endIndex + 1);
+          if (nextStart < nextEnd) {
+            cleanMarker.startIndex = nextStart;
+            cleanMarker.endIndex = nextEnd;
+          }
+        }
+      }
+
+      return markers;
+    }
+
+    function getSegmentTone(labelPart) {
+      const text = String(labelPart || "").trim().toLowerCase();
+      if (!text) {
+        return "";
+      }
+      if (text.includes("未报关") || text.includes("未放行") || text.includes("held")) {
+        return "is-negative";
+      }
+      if (text.includes("已报关") || text.includes("已放行") || text.includes("clean")) {
+        return "is-positive";
+      }
+      if (text.includes("清关中")) {
+        return "is-warning";
+      }
+      return "";
+    }
+
+    function renderSegmentToneHtml(text) {
+      const value = String(text || "").trim();
+      if (!value) {
+        return "&nbsp;";
+      }
+      return `<span class="schedule-segment-tone ${getSegmentTone(value)}">${escapeHtml(value)}</span>`;
+    }
+
+art.trim()).filter(Boolean);
+      if (!parts.length) {
+        return { top: "", bottom: "" };
+      }
+      if (parts.length === 1) {
+        return { top: parts[0], bottom: "" };
+      }
+      return {
+        top: parts[0],
+        bottom: parts.slice(1).join(" / ")
+      };
+    }
+
+    function openChatPanel() {
+      chatPanel.classList.add("is-open");
+      chatPanel.setAttribute("aria-hidden", "false");
+      chatFab.style.display = "none";
+      window.setTimeout(() => chatInput.focus(), 50);
+    }
+
+    function closeChatPanel() {
+      chatPanel.classList.remove("is-open");
+      chatPanel.setAttribute("aria-hidden", "true");
+      chatFab.style.display = "flex";
+    }
+
+    function appendChatMessage(role, text) {
+      const message = document.createElement("div");
+      message.className = `chat-message ${role}`;
+      message.textContent = String(text || "").trim();
+      chatBody.appendChild(message);
+      chatBody.scrollTop = chatBody.scrollHeight;
+      return message;
+    }
+
+    async function handleChatSubmit(event) {
+      event.preventDefault();
+      const message = chatInput.value.trim();
+      if (!message) {
+        return;
+      }
+
+      appendChatMessage("user", message);
+      chatInput.value = "";
+      chatSend.disabled = true;
+      chatInput.disabled = true;
+      const loadingMessage = appendChatMessage("status", "正在回复...");
+
+      try {
+        const response = await fetch(CHAT_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message })
+        });
+        const rawBody = await response.text();
+        let payload = null;
+        try {
+          payload = rawBody ? JSON.parse(rawBody) : {};
+        } catch (_error) {
+          throw new Error("AI 服务返回了无效内容，请稍后重试。");
+        }
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload?.error?.message || `AI 服务异常 (${response.status})`);
+        }
+        loadingMessage.remove();
+        appendChatMessage("bot", payload.replyText || "暂时没有拿到回复，请稍后再试。");
+      } catch (error) {
+        loadingMessage.remove();
+        appendChatMessage("error", error.message || "AI 服务短暂波动，请稍后重试。");
+      } finally {
+        chatSend.disabled = false;
+        chatInput.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    function renderSchedule(payload) {
+      const schedule = buildScheduleView(payload);
+      if (!schedule.hasAnyDate) {
+        hideSchedule();
+        return;
+      }
+
+      const stages = schedule.stages.map((item) => ({
+        ...item,
+        done: isScheduleStageDone(item)
+      }));
+      const segments = SCHEDULE_SEGMENTS.map((segment) => {
+        const toStageIndex = stages.findIndex((item) => item.key === segment.to);
+        const label = segment.statusKey === "customsStatus"
+          ? (schedule.customsStatus || segment.defaultLabel)
+          : segment.statusKey === "voyageStatus"
+            ? (schedule.voyageStatus || segment.defaultLabel)
+            : segment.defaultLabel;
+        return {
+          ...segment,
+          label,
+          parts: splitSegmentLabel(label),
+          done: toStageIndex >= 0 ? stages[toStageIndex].done : false
+        };
+      });
+      const clearanceMarkers = buildClearanceMarkers(schedule, stages);
+
+      scheduleBoard.innerHTML = `
+        ${segments.map((segment, index) => `
+          <div class="schedule-segment ${segment.done ? "is-done" : ""}" style="grid-column:${index + 2} / span 2; grid-row:1;">
+            <div class="schedule-segment-top">${renderSegmentToneHtml(segment.parts.top)}</div>
+            <div class="schedule-segment-line"></div>
+            <div class="schedule-segment-bottom">${renderSegmentToneHtml(segment.parts.bottom)}</div>
+          </div>
+        `).join("")}
+        ${clearanceMarkers.map((clearanceMarker) => `
+          <div class="schedule-clearance-marker" style="grid-column:${clearanceMarker.startIndex + 2} / ${clearanceMarker.endIndex + 3}; grid-row:1;">
+            <div class="schedule-clearance-top">${renderSegmentToneHtml(clearanceMarker.status)}</div>
+            <div class="schedule-clearance-bottom">${clearanceMarker.timeLabel ? escapeHtml(clearanceMarker.timeLabel) : "&nbsp;"}</div>
+          </div>
+        `).join("")}
+        ${stages.map((item, index) => `
+          <div class="schedule-stage ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:1;">
+            <div class="schedule-stage-card">
+              <div class="schedule-stage-icon">${item.icon}</div>
+            </div>
+            <div class="schedule-stage-label">${escapeHtml(item.label)}</div>
+          </div>
+        `).join("")}
+        <div class="schedule-row-title" style="grid-column:1; grid-row:2;">计划时间</div>
+          ${stages.map((item, index) => `
+            <div class="schedule-time-cell ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:2;">
+              ${item.plannedDate ? escapeHtml(formatDisplayDate(item.plannedDate)) : '<span class="schedule-missing">待更新</span>'}
+            </div>
+          `).join("")}
+        <div class="schedule-row-title" style="grid-column:1; grid-row:3;">实际时间</div>
+          ${stages.map((item, index) => `
+            <div class="schedule-time-cell ${item.actualDate ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:3;">
+              ${item.actualDate ? escapeHtml(formatDisplayDate(item.actualDate)) : '<span class="schedule-missing">待更新</span>'}
+            </div>
+          `).join("")}
+      `;
+      scheduleSection.style.display = "block";
+    }
+
+    async function requestTrackPayload(putCode) {
+      const response = await fetch(TRACK_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ putCode })
+      });
+      const rawBody = await response.text();
+      let payload = null;
+      try {
+        payload = rawBody ? JSON.parse(rawBody) : {};
+      } catch (_error) {
+        throw new Error("查询接口返回了页面内容，请检查 api.ai-express.cn 的 HTTPS 与 /api/track 配置");
+      }
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload?.error?.message || payload?.error || `查询失败 (${response.status})`);
+      }
+      return payload;
+    }
+
+    function shouldAutoPollTrack(payload) {
+      return payload?.pendingRefresh === true;
+    }
+
+    async function fetchTrackPayloadWithAutoPoll(putCode) {
+      let payload = await requestTrackPayload(putCode);
+      if (!shouldAutoPollTrack(payload)) {
+        return payload;
+      }
+
+      for (let attempt = 1; attempt <= TRACK_AUTO_POLL_MAX_ATTEMPTS; attempt += 1) {
+        setLoadingMessage(`官网轨迹正在后台刷新，正在自动获取第 ${attempt}/${TRACK_AUTO_POLL_MAX_ATTEMPTS} 次结果，请稍候...`);
+        await new Promise((resolve) => window.setTimeout(resolve, TRACK_AUTO_POLL_INTERVAL_MS));
+        payload = await requestTrackPayload(putCode);
+        if (!shouldAutoPollTrack(payload)) {
+          return payload;
+        }
+      }
+
+      return payload;
+    }
+
+    async function handleSearch() {
+      const putCode = searchBox.value.trim().toUpperCase();
+      if (!putCode) {
+        showError("请输入入仓号");
+        return;
+      }
+
+      updateUrlWithPutCode(putCode);
+      clearError();
+      resetLoadingMessage();
+      setLoading(true);
+      resultContainer.style.display = "none";
+      hideSchedule();
+      trackList.innerHTML = "";
+      resSummary.textContent = "";
+
+      try {
+        const payload = await fetchTrackPayloadWithAutoPoll(putCode);
+
+失败");
+      } finally {
+        resetLoadingMessage();
+        setLoading(false);
+      }
+    }
+
+    initializeSearchFromLocation();
+  </script>
+</body>
+</html>
+        resTitle.textContent = `${payload.putCode} 轨迹结果`;
+        const timeline = Array.isArray(payload.timeline) ? payload.timeline : [];
+        resSummary.textContent = timeline.length ? `共 ${timeline.length} 条轨迹` : "已返回原始结果";
+        renderSchedule(payload);
+        renderTimeline(payload.replyText, timeline);
+        resultContainer.style.display = "grid";
+      } catch (error) {
+        hideSchedule();
+        showError(error.message || "连接腾讯云查询服务    function splitSegmentLabel(label) {
+      const parts = String(label || "").split("/").map((part) => p    function buildScheduleView(payload) {
+      const apiSchedule = payload?.planSchedule && typeof payload.planSchedule === "object"
+        ? payload.planSchedule
+        : {};
+      const fallback = parseScheduleFromReplyText(payload?.replyText || "");
+      const timelineDerived = deriveStageMomentsFromTimeline(payload);
+      const clearanceSignals = chooseClearanceSignals(payload, fallback);
+      const stages = SCHEDULE_STEPS.map((step) => {
+        const plannedMoment = pic    function parseScheduleFromReplyText(replyText) {
+      const result = {};
+      const mapping = {
+        "预配众筹柜": "crowdfundCode",
+        "众筹柜名称": "crowdfundName",
+        "计划进仓日期": "planJoinDate",
+        "计划进仓时间": "planJoinDate",
+        "计划入仓日期": "planJoinDate",
+        "计划入仓时间": "planJoinDate",
+        "实际进仓日期": "actualJoinDate",
+        "实际进仓时间": "actualJoinDate",
+        "实际入仓日期": "actualJoinDate",
+        "实际入仓时间": "actualJoinDate",
+        "计划装柜日期": "plannedLoadDate",
+        "计划装柜时间": "plannedLoadDate",
+        "实际装柜日期": "actualLoadDate",
+        "实际装柜时间": "actualLoadDate",
+        "计划离港日期": "plannedDepartureDate",
+        "计划离港时间": "plannedDepartureDate",
+        "计划到港日期": "plannedArrivalDate",
+        "计划到港时间": "plannedArrivalDate",
+        "实际离港日期": "actualDepartureDate",
+        "实际离港时间": "actualDepartureDate",
+        "实际到港日期": "actualArrivalDate",
+        "实际到港时间": "actualArrivalDate",
+        "计划提货日期": "plannedPickupDate",
+        "计划提货时间": "plannedPickup    const searchBox = document.getElementById("searchBox");
+    const searchBtn = document.getElementById("searchBtn");
+    const loading = document.getElementById("loading");
+    const errorBox = document.getElementById("errorBox");
+    const resultContainer = document.getElementById("result-container");
+    const scheduleSection = document.getElementById("schedule-section");
+    const scheduleBoard = document.getElementById("schedule-board");
+    const trackList = document.getElementById("track-list");
+    const resTitle = document.getElementById("res-title");
+    const resSummary = document.getElementById("res-summary");
+    const chatFab = document.getElementById("chatFab");
+    const chatPanel = document.getElementById("chatPanel");
+    const chatClose = document.getElementById("chatClose");
+    const chatBody = document.getElementById("chatBody");
+    const chatForm = document.getElement<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -317,7 +1523,8 @@
       justify-content: center;
       min-height: 118px;
       pointer-events: none;
-    }
+  
+  }
     .schedule-segment-top,
     .schedule-segment-bottom {
       min-height: 18px;
@@ -655,1199 +1862,4 @@
     .context {
       font-size: 14px;
       line-height: 1.65;
-      color: #1a2235;
-      white-space: pre-wrap;
-    }
-    .error-box {
-      display: none;
-      width: 100%;
-      margin-top: 18px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: #fff2f2;
-      border: 1px solid #ffd2d2;
-      color: #9d2f2f;
-      font-size: 14px;
-    }
-    footer {
-      padding: 22px;
-      text-align: center;
-      color: #7b8397;
-      font-size: 12px;
-    }
-    .footer-link {
-      color: inherit;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(123, 131, 151, 0.35);
-    }
-    .footer-link:hover {
-      color: #2546a8;
-      border-bottom-color: rgba(37, 70, 168, 0.45);
-    }
-    @media (max-width: 640px) {
-      header {
-        padding: 18px 16px 0;
-      }
-      main {
-        width: min(100%, calc(100vw - 24px));
-      }
-      .portal-layout {
-        grid-template-columns: 1fr;
-        gap: 18px;
-      }
-      .portal-side {
-        position: static;
-      }
-      .portal-side-card {
-        padding: 16px;
-        border-radius: 20px;
-      }
-      .portal-side-copy {
-        display: none;
-      }
-      .portal-menu {
-        margin-top: 14px;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .portal-link {
-        grid-template-columns: 44px minmax(0, 1fr);
-        padding: 12px;
-      }
-      .portal-link-logo {
-        width: 44px;
-        height: 44px;
-        border-radius: 15px;
-      }
-      .portal-link-logo svg {
-        width: 28px;
-        height: 28px;
-      }
-      .portal-link-arrow {
-        display: none;
-      }
-      .search-card,
-      .result-card {
-        padding: 18px;
-        border-radius: 20px;
-      }
-      .search-input {
-        height: 58px;
-        padding-right: 114px;
-      }
-      .flag-search-btn {
-        padding: 0 12px;
-      }
-      .schedule-board {
-        grid-template-columns: 58px repeat(7, minmax(0, 1fr));
-        column-gap: 6px;
-        row-gap: 8px;
-      }
-      .schedule-segment {
-        min-height: 90px;
-      }
-      .schedule-segment-top,
-      .schedule-segment-bottom {
-        min-height: 14px;
-        font-size: 9px;
-      }
-      .schedule-segment-top {
-        margin-bottom: 6px;
-      }
-      .schedule-segment-bottom {
-        margin-top: 6px;
-      }
-      .schedule-segment-line {
-        width: calc(100% - 16px);
-      }
-      .schedule-stage-card {
-        width: 42px;
-        height: 42px;
-        border-radius: 14px;
-        margin-bottom: 6px;
-      }
-      .schedule-stage-icon {
-        width: 26px;
-        height: 26px;
-        border-radius: 9px;
-        font-size: 16px;
-      }
-      .schedule-stage-label {
-        font-size: 11px;
-      }
-      .schedule-row-title {
-        min-height: 40px;
-        font-size: 11px;
-      }
-      .schedule-time-cell {
-        min-height: 40px;
-        font-size: 11px;
-        padding: 6px 3px;
-      }
-      .chat-fab {
-        top: auto;
-        bottom: 18px;
-        right: 18px;
-        transform: none;
-        width: 64px;
-        height: 64px;
-        font-size: 26px;
-      }
-      .chat-panel {
-        top: auto;
-        right: 12px;
-        bottom: 96px;
-        transform: none;
-        width: calc(100vw - 24px);
-        height: min(560px, calc(100vh - 120px));
-      }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <a href="javascript:void(0)" onclick="alert('价格预算页面暂未接入。')">价格预算</a>
-    <a class="nav-portal-link" href="https://lala.ai-express.cn" title="进入 Aulala 登录页">
-      <span class="nav-portal-dot" aria-hidden="true"></span>
-      <span>Aulala</span>
-    </a>
-    <a href="javascript:void(0)" class="nav-login-btn" onclick="loginToERP()">ERP 登录</a>
-  </header>
-
-  <main>
-    <div class="portal-content">
-        <div class="logo-container">
-          <div class="logo-main"><span class="blue">澳洲</span><span class="gold">专线联盟</span></div>
-          <div class="logo-sub">AI-EXPRESS ALLIANCE</div>
-        </div>
-
-        <section class="search-card">
-          <div class="search-wrapper">
-            <input
-              id="searchBox"
-              class="search-input"
-              type="text"
-              placeholder="输入入仓号查询轨迹 (如: MY06001294AU3)"
-            >
-            <button id="searchBtn" class="flag-search-btn" type="button" onclick="handleSearch()">
-              <span class="flag-image"></span>
-              <span>查询</span>
-            </button>
-          </div>
-          <div id="loading">正在从腾讯云调取轨迹信息，请稍候...</div>
-          <div id="errorBox" class="error-box"></div>
-        </section>
-
-        <section id="result-container">
-          <div id="schedule-section" class="result-card schedule-panel" style="display:none;">
-            <div class="schedule-board-wrap">
-              <div id="schedule-board" class="schedule-board"></div>
-            </div>
-          </div>
-
-          <div class="result-card track-panel">
-            <div class="track-header">
-              <h4 id="res-title">查询结果</h4>
-              <div id="res-summary" class="track-summary"></div>
-            </div>
-            <ul id="track-list" class="timeline"></ul>
-          </div>
-        </section>
-      </div>
-  </main>
-
-  <button id="chatFab" class="chat-fab" type="button" aria-label="打开官网客服">💬</button>
-  <aside id="chatPanel" class="chat-panel" aria-hidden="true">
-    <div class="chat-header">
-      <div class="chat-header-title">AI 智能客服</div>
-      <button id="chatClose" class="chat-close" type="button" aria-label="关闭客服">✕</button>
-    </div>
-    <div id="chatBody" class="chat-body">
-      <div class="chat-message bot">您好！我是澳洲专线联盟官网客服。查轨迹建议直接用上方查询框；有其他疑问可以直接和我说。</div>
-    </div>
-    <div class="chat-footer">
-      <form id="chatForm" class="chat-form">
-        <input id="chatInput" class="chat-input" type="text" placeholder="输入问题..." maxlength="1000">
-        <button id="chatSend" class="chat-send" type="submit">发送</button>
-      </form>
-    </div>
-  </aside>
-
-  <footer>联盟总部：悉尼 | <a class="footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">粤ICP备2023065947号-1</a></footer>
-
-  <script>
-    function resolveApiBaseUrl() {
-      try {
-        const url = new URL(window.location.href);
-        const hostname = (url.hostname || "").toLowerCase();
-        if (url.protocol !== "file:" && (hostname === "api.ai-express.cn" || hostname === "182-254-180-143.nip.io")) {
-          return url.origin;
-        }
-      } catch (_error) {
-        // Fallback to the public API host below.
-      }
-      return "https://api.ai-express.cn:8443";
-    }
-
-    const API_BASE_URL = resolveApiBaseUrl();
-    const TRACK_API_URL = `${API_BASE_URL}/api/track`;
-    const CHAT_API_URL = `${API_BASE_URL}/api/chat`;
-    const DEFAULT_TRACK_LOADING_TEXT = "正在从腾讯云调取轨迹信息，请稍候...";
-    const TRACK_AUTO_POLL_INTERVAL_MS = 3000;
-    const TRACK_AUTO_POLL_MAX_ATTEMPTS = 10;
-
-    const searchBox = document.getElementById("searchBox");
-    const searchBtn = document.getElementById("searchBtn");
-    const loading = document.getElementById("loading");
-    const errorBox = document.getElementById("errorBox");
-    const resultContainer = document.getElementById("result-container");
-    const scheduleSection = document.getElementById("schedule-section");
-    const scheduleBoard = document.getElementById("schedule-board");
-    const trackList = document.getElementById("track-list");
-    const resTitle = document.getElementById("res-title");
-    const resSummary = document.getElementById("res-summary");
-    const chatFab = document.getElementById("chatFab");
-    const chatPanel = document.getElementById("chatPanel");
-    const chatClose = document.getElementById("chatClose");
-    const chatBody = document.getElementById("chatBody");
-    const chatForm = document.getElementById("chatForm");
-    const chatInput = document.getElementById("chatInput");
-    const chatSend = document.getElementById("chatSend");
-    const SCHEDULE_STEPS = [
-      { key: "warehousing", label: "入库", icon: "&#127970;", plannedKey: "planJoinDate", actualKey: "actualJoinDate" },
-      { key: "load", label: "装柜", icon: "&#128230;", plannedKey: "plannedLoadDate", actualKey: "actualLoadDate" },
-      { key: "departure", label: "离港", icon: "&#9992;&#65039;", plannedKey: "plannedDepartureDate", actualKey: "actualDepartureDate" },
-      { key: "arrival", label: "到港", icon: "&#128748;", plannedKey: "plannedArrivalDate", actualKey: "actualArrivalDate" },
-      { key: "pickup", label: "提柜", icon: "&#128666;", plannedKey: "plannedPickupDate", actualKey: "actualPickupDate" },
-      { key: "unpack", label: "拆柜", icon: "&#128736;&#65039;", plannedKey: "plannedUnpackDate", actualKey: "actualUnpackDate" },
-      { key: "delivery", label: "派送", icon: "&#9989;", plannedKey: "plannedDeliveryDate", actualKey: "actualDeliveryDate" }
-    ];
-    const SCHEDULE_SEGMENTS = [
-      { from: "warehousing", to: "load", defaultLabel: "" },
-      { from: "load", to: "departure", defaultLabel: "", statusKey: "customsStatus" },
-      { from: "departure", to: "arrival", defaultLabel: "" },
-      { from: "arrival", to: "pickup", defaultLabel: "" },
-      { from: "pickup", to: "unpack", defaultLabel: "" },
-      { from: "unpack", to: "delivery", defaultLabel: "" }
-    ];
-
-    searchBox.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        handleSearch();
-      }
-    });
-    chatFab.addEventListener("click", openChatPanel);
-    chatClose.addEventListener("click", closeChatPanel);
-    chatForm.addEventListener("submit", handleChatSubmit);
-
-    function loginToERP() {
-      window.location.href = "http://121.196.233.99";
-    }
-
-    function setLoading(isLoading) {
-      if (isLoading && !loading.textContent.trim()) {
-        loading.textContent = DEFAULT_TRACK_LOADING_TEXT;
-      }
-      loading.style.display = isLoading ? "block" : "none";
-      searchBtn.disabled = isLoading;
-    }
-
-    function showError(message) {
-      errorBox.textContent = message;
-      errorBox.style.display = "block";
-    }
-
-    function clearError() {
-      errorBox.textContent = "";
-      errorBox.style.display = "none";
-    }
-
-    function setLoadingMessage(message) {
-      loading.textContent = String(message || "").trim() || DEFAULT_TRACK_LOADING_TEXT;
-    }
-
-    function resetLoadingMessage() {
-      loading.textContent = DEFAULT_TRACK_LOADING_TEXT;
-    }
-
-    function hideSchedule() {
-      scheduleSection.style.display = "none";
-      scheduleBoard.innerHTML = "";
-    }
-
-    function getRouteBasePath(url) {
-      const pathname = (url.pathname || "").replace(/\/+$/, "") || "/";
-      if (pathname === "/site" || pathname.startsWith("/site/")) {
-        return "/site";
-      }
-      return "";
-    }
-
-    function readPutCodeFromLocation(url) {
-      const queryPutCode = (url.searchParams.get("putCode") || "").trim().toUpperCase();
-      if (queryPutCode) {
-        return queryPutCode;
-      }
-      const pathMatch = url.pathname.match(/^(?:\/site)?\/track\/([^/?#]+)\/?$/i);
-      if (!pathMatch) {
-        return "";
-      }
-      return decodeURIComponent(pathMatch[1] || "").trim().toUpperCase();
-    }
-
-    function shouldKeepQueryMode(url) {
-      if (url.protocol === "file:") {
-        return true;
-      }
-      if (url.searchParams.has("putCode")) {
-        return true;
-      }
-      try {
-        return window.sessionStorage.getItem("__ai_express_query_mode") === "1";
-      } catch (_error) {
-        return false;
-      }
-    }
-
-    function updateUrlWithPutCode(putCode) {
-      try {
-        const url = new URL(window.location.href);
-        const routeBasePath = getRouteBasePath(url);
-        if (shouldKeepQueryMode(url)) {
-          if (putCode) {
-            url.searchParams.set("putCode", putCode);
-          } else {
-            url.searchParams.delete("putCode");
-          }
-          if (routeBasePath) {
-            url.pathname = `${routeBasePath}/`;
-          } else {
-            url.pathname = "/";
-          }
-        } else {
-          if (putCode) {
-            url.pathname = `${routeBasePath}/track/${encodeURIComponent(putCode)}`;
-            url.searchParams.delete("putCode");
-          } else {
-            url.pathname = routeBasePath ? `${routeBasePath}/` : "/";
-            url.searchParams.delete("putCode");
-          }
-        }
-        window.history.replaceState({}, "", url.toString());
-      } catch (_error) {
-        // Ignore URL update failures in older browsers or restricted contexts.
-      }
-    }
-
-    function initializeSearchFromLocation() {
-      try {
-        const url = new URL(window.location.href);
-        const putCode = readPutCodeFromLocation(url);
-        if (!putCode) {
-          return;
-        }
-        if (url.searchParams.has("putCode")) {
-          try {
-            window.sessionStorage.setItem("__ai_express_query_mode", "1");
-          } catch (_error) {
-            // Ignore sessionStorage failures and keep the page usable.
-          }
-        }
-        searchBox.value = putCode;
-        window.setTimeout(() => handleSearch(), 80);
-      } catch (_error) {
-        // Ignore malformed URL state and keep the page usable.
-      }
-    }
-
-    function renderTimeline(replyText, timeline) {
-      const items = Array.isArray(timeline) ? timeline : [];
-      if (!items.length) {
-        trackList.innerHTML = `<li class="timeline-item latest"><div class="context">${escapeHtml(replyText || "暂无轨迹信息")}</div></li>`;
-        return;
-      }
-      trackList.innerHTML = items.map((item, index) => `
-        <li class="timeline-item ${index === 0 ? "latest" : ""}">
-          <div class="time">${escapeHtml(item.time || "")}</div>
-          <div class="context">${escapeHtml(item.info || "")}</div>
-        </li>
-      `).join("");
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    function normalizeMomentText(value) {
-      const text = String(value || "").trim();
-      if (!text) {
-        return "";
-      }
-      const isoMatch = text.match(/\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?/);
-      if (isoMatch) {
-        return isoMatch[0];
-      }
-      const slashMatch = text.match(/\b(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}:\d{2}(?::\d{2})?))?\b/);
-      if (slashMatch) {
-        const [, day, month, year, timePart = ""] = slashMatch;
-        return `${year}-${month}-${day}${timePart ? ` ${timePart}` : ""}`;
-      }
-      return text;
-    }
-
-    function normalizeDateText(value) {
-      const text = normalizeMomentText(value);
-      if (!text) {
-        return "";
-      }
-      const match = text.match(/\d{4}-\d{2}-\d{2}/);
-      return match ? match[0] : text;
-    }
-
-    function parseScheduleFromReplyText(replyText) {
-      const result = {};
-      const mapping = {
-        "预配众筹柜": "crowdfundCode",
-        "众筹柜名称": "crowdfundName",
-        "计划进仓日期": "planJoinDate",
-        "计划进仓时间": "planJoinDate",
-        "计划入仓日期": "planJoinDate",
-        "计划入仓时间": "planJoinDate",
-        "实际进仓日期": "actualJoinDate",
-        "实际进仓时间": "actualJoinDate",
-        "实际入仓日期": "actualJoinDate",
-        "实际入仓时间": "actualJoinDate",
-        "计划装柜日期": "plannedLoadDate",
-        "计划装柜时间": "plannedLoadDate",
-        "实际装柜日期": "actualLoadDate",
-        "实际装柜时间": "actualLoadDate",
-        "计划离港日期": "plannedDepartureDate",
-        "计划离港时间": "plannedDepartureDate",
-        "计划到港日期": "plannedArrivalDate",
-        "计划到港时间": "plannedArrivalDate",
-        "实际离港日期": "actualDepartureDate",
-        "实际离港时间": "actualDepartureDate",
-        "实际到港日期": "actualArrivalDate",
-        "实际到港时间": "actualArrivalDate",
-        "计划提货日期": "plannedPickupDate",
-        "计划提货时间": "plannedPickupDate",
-        "计划提柜日期": "plannedPickupDate",
-        "计划提柜时间": "plannedPickupDate",
-        "实际提货日期": "actualPickupDate",
-        "实际提货时间": "actualPickupDate",
-        "实际提柜日期": "actualPickupDate",
-        "实际提柜时间": "actualPickupDate",
-        "实际拆柜日期": "actualUnpackDate",
-        "实际拆柜时间": "actualUnpackDate",
-        "计划拆柜日期": "plannedUnpackDate",
-        "计划拆柜时间": "plannedUnpackDate",
-        "计划派送日期": "plannedDeliveryDate",
-        "计划派送时间": "plannedDeliveryDate",
-        "实际派送日期": "actualDeliveryDate",
-        "实际派送时间": "actualDeliveryDate",
-        "实际签收日期": "actualDeliveryDate",
-        "实际签收时间": "actualDeliveryDate",
-        "进口清关日期": "importClearanceTime",
-        "进口清关时间": "importClearanceTime",
-        "清关日期": "importClearanceTime",
-        "清关时间": "importClearanceTime",
-        "进口清关状态": "importClearanceStatus",
-        "清关状态": "importClearanceStatus",
-        "报关状态": "customsStatus",
-        "报关放行状态": "customsStatus",
-        "航程状态": "voyageStatus",
-        "海运状态": "voyageStatus"
-      };
-      const textKeys = new Set([
-        "crowdfundCode",
-        "crowdfundName",
-        "customsStatus",
-        "voyageStatus",
-        "importClearanceStatus",
-      ]);
-      const lines = String(replyText || "").split("\n");
-      for (const line of lines) {
-        const match = line.trim().match(/^([^:：]+)[:：]\s*(.+)$/);
-        if (!match) {
-          continue;
-        }
-        const key = mapping[match[1].trim()];
-        if (!key) {
-          continue;
-        }
-        result[key] = textKeys.has(key)
-          ? match[2].trim()
-          : normalizeMomentText(match[2]);
-      }
-      return result;
-    }
-
-    function parseTimelineEntriesFromReplyText(replyText) {
-      const items = [];
-      for (const rawLine of String(replyText || "").split("\n")) {
-        const cleaned = rawLine.trim().replace(/^[-·•]+\s*/, "");
-        if (!cleaned) {
-          continue;
-        }
-        const match = cleaned.match(/^(\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)\s*\|\s*(.+)$/);
-        if (!match) {
-          continue;
-        }
-        items.push({
-          time: match[1].trim(),
-          info: match[2].trim(),
-        });
-      }
-      return items;
-    }
-
-    function pickText(...values) {
-      for (const value of values) {
-        const text = String(value || "").trim();
-        if (text) {
-          return text;
-        }
-      }
-      return "";
-    }
-
-    function classifyClearanceStatus(value) {
-      const text = String(value || "").trim();
-      if (!text) {
-        return "";
-      }
-      const lower = text.toLowerCase();
-      if (lower.includes("held for processing")) {
-        return "";
-      }
-      if (
-        lower === "clean" ||
-        text === "已放行" ||
-        lower.includes("clearance processing complete") ||
-        lower.includes("customs cleared") ||
-        lower.includes("clearance complete")
-      ) {
-        return "clean";
-      }
-      if (
-        lower === "held" ||
-        lower.includes("customs held") ||
-        lower.includes("held at customs") ||
-        lower.includes("clearance held")
-      ) {
-        return "held";
-      }
-      if (text.includes("清关中") || lower.includes("clearance in progress") || lower.includes("clearance pending") || lower.includes("processing customs")) {
-        return "清关中";
-      }
-      return "";
-    }
-
-    function deriveStageMomentsFromTimeline(payload) {
-      const timelineEntries = Array.isArray(payload?.timeline) && payload.timeline.length
-        ? payload.timeline
-        : parseTimelineEntriesFromReplyText(payload?.replyText || "");
-      const derived = {};
-
-      const register = (key, timeValue) => {
-        const momentText = normalizeMomentText(timeValue);
-        if (!momentText || derived[key]) {
-          return;
-        }
-        derived[key] = momentText;
-      };
-
-      for (const item of timelineEntries) {
-        const info = String(item?.info || "").trim().toLowerCase();
-        if (!info) {
-          continue;
-        }
-        if (info.includes("flight dispatched")) {
-          register("actualDepartureDate", item.time);
-          continue;
-        }
-        if (info.includes("flight arrived")) {
-          register("actualArrivalDate", item.time);
-          continue;
-        }
-        if (info.includes("arrived at warehouse")) {
-          register("actualPickupDate", item.time);
-          continue;
-        }
-        if (info.includes("deconsolidation has been done")) {
-          register("actualUnpackDate", item.time);
-          continue;
-        }
-        const bookingTimeMatch = info.match(/booking time:\s*(\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)/i);
-        if (bookingTimeMatch) {
-          register("plannedDeliveryDate", bookingTimeMatch[1]);
-        }
-        const isDeliveredEvent =
-          info.includes("parcels successfully delivered") ||
-          info.includes("parcel delivered") ||
-          info.includes("shipment delivered") ||
-          info.includes("delivered successfully");
-        if (isDeliveredEvent) {
-          register("actualDeliveryDate", item.time);
-        }
-      }
-
-      return derived;
-    }
-
-    function chooseClearanceSignals(payload, fallback) {
-      const candidates = [];
-      const pushCandidate = (timeValue, statusValue, source) => {
-        const status = classifyClearanceStatus(statusValue);
-        if (!status) {
-          return;
-        }
-        const momentText = normalizeMomentText(timeValue);
-        candidates.push({
-          source,
-          status,
-          momentText,
-          moment: parseMomentValue(momentText),
-        });
-      };
-
-      pushCandidate(
-        payload?.planSchedule?.importClearanceTime || payload?.planSchedule?.importClearanceDate,
-        payload?.planSchedule?.importClearanceStatus,
-        "api"
-      );
-      pushCandidate(fallback.importClearanceTime, fallback.importClearanceStatus, "reply");
-
-      const timelineEntries = Array.isArray(payload?.timeline) && payload.timeline.length
-        ? payload.timeline
-        : parseTimelineEntriesFromReplyText(payload?.replyText || "");
-      for (const item of timelineEntries) {
-        pushCandidate(item?.time, item?.info, "timeline");
-      }
-
-      const bestByStatus = new Map();
-      for (const item of candidates) {
-        const current = bestByStatus.get(item.status);
-        if (!current) {
-          bestByStatus.set(item.status, item);
-          continue;
-        }
-        if (item.moment && !current.moment) {
-          bestByStatus.set(item.status, item);
-          continue;
-        }
-        if (item.moment && current.moment && item.moment > current.moment) {
-          bestByStatus.set(item.status, item);
-        }
-      }
-
-      return Array.from(bestByStatus.values()).sort((a, b) => {
-        if (a.moment && b.moment) {
-          return a.moment - b.moment;
-        }
-        if (a.moment) {
-          return -1;
-        }
-        if (b.moment) {
-          return 1;
-        }
-        return a.status.localeCompare(b.status);
-      });
-    }
-
-    function hasMomentTime(value) {
-      return /\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(normalizeMomentText(value));
-    }
-
-    function pickMomentText(...values) {
-      let fallback = "";
-      for (const value of values) {
-        const text = normalizeMomentText(value);
-        if (!text) {
-          continue;
-        }
-        if (hasMomentTime(text)) {
-          return text;
-        }
-        if (!fallback) {
-          fallback = text;
-        }
-      }
-      return fallback;
-    }
-
-    function buildScheduleView(payload) {
-      const apiSchedule = payload?.planSchedule && typeof payload.planSchedule === "object"
-        ? payload.planSchedule
-        : {};
-      const fallback = parseScheduleFromReplyText(payload?.replyText || "");
-      const timelineDerived = deriveStageMomentsFromTimeline(payload);
-      const clearanceSignals = chooseClearanceSignals(payload, fallback);
-      const stages = SCHEDULE_STEPS.map((step) => {
-        const plannedMoment = pickMomentText(
-          apiSchedule[step.plannedKey],
-          fallback[step.plannedKey],
-          timelineDerived[step.plannedKey],
-          Array.isArray(apiSchedule.milestones)
-            ? apiSchedule.milestones.find((item) => item?.key === step.plannedKey)?.date
-            : ""
-        );
-        const actualMoment = pickMomentText(
-          apiSchedule[step.actualKey],
-          fallback[step.actualKey],
-          timelineDerived[step.actualKey],
-          Array.isArray(apiSchedule.milestones)
-            ? apiSchedule.milestones.find((item) => item?.key === step.actualKey)?.date
-            : ""
-        );
-        return {
-          ...step,
-          plannedMoment,
-          actualMoment,
-          plannedDate: normalizeDateText(plannedMoment),
-          actualDate: normalizeDateText(actualMoment),
-        };
-      });
-      return {
-        crowdfundCode: pickText(apiSchedule.crowdfundCode, fallback.crowdfundCode),
-        crowdfundName: pickText(apiSchedule.crowdfundName, fallback.crowdfundName),
-        planJoinDate: pickText(apiSchedule.planJoinDate, fallback.planJoinDate),
-        customsStatus: pickText(apiSchedule.customsStatus, fallback.customsStatus),
-        voyageStatus: pickText(apiSchedule.voyageStatus, fallback.voyageStatus),
-        importClearanceSignals: clearanceSignals,
-        stages,
-        hasAnyDate: stages.some((item) => item.plannedDate || item.actualDate)
-      };
-    }
-
-    function isScheduleStageDone(item) {
-      if (item?.actualDate) {
-        return true;
-      }
-      if (!item?.plannedDate) {
-        return false;
-      }
-      const probe = new Date(`${item.plannedDate}T00:00:00`);
-      if (Number.isNaN(probe.getTime())) {
-        return false;
-      }
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return probe.getTime() <= today.getTime();
-    }
-
-    function formatDisplayDate(value) {
-      const text = normalizeDateText(value);
-      const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (isoMatch) {
-        return `${Number(isoMatch[2])}月${Number(isoMatch[3])}日`;
-      }
-      const slashMatch = String(value || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (slashMatch) {
-        return `${Number(slashMatch[2])}月${Number(slashMatch[1])}日`;
-      }
-      return text;
-    }
-
-    function formatMomentLabel(value) {
-      const text = normalizeMomentText(value);
-      if (!text) {
-        return "";
-      }
-      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}:\d{2})(?::\d{2})?)?$/);
-      if (!match) {
-        return text;
-      }
-      const datePart = `${Number(match[2])}月${Number(match[3])}日`;
-      return match[4] ? `${datePart} ${match[4]}` : datePart;
-    }
-
-    function normalizeSingleStatusLabel(value) {
-      const text = String(value || "").trim();
-      if (!text) {
-        return "";
-      }
-      const lower = text.toLowerCase();
-      if (lower.includes("held")) {
-        return "held";
-      }
-      if (lower.includes("clean")) {
-        return "clean";
-      }
-      if (text.includes("清关中")) {
-        return "清关中";
-      }
-      if (text.includes("未报关")) {
-        return "未报关";
-      }
-      if (text.includes("已报关")) {
-        return "已报关";
-      }
-      return text.split("/")[0].trim();
-    }
-
-    function parseMomentValue(value) {
-      const text = normalizeMomentText(value);
-      if (!text) {
-        return null;
-      }
-      const isoText = /^\d{4}-\d{2}-\d{2}$/.test(text)
-        ? `${text}T00:00:00`
-        : text.replace(" ", "T");
-      const probe = new Date(isoText);
-      return Number.isNaN(probe.getTime()) ? null : probe;
-    }
-
-    function getStageMomentText(item) {
-      return item?.actualMoment || item?.plannedMoment || "";
-    }
-
-    function buildClearanceMarker(signal, stages) {
-      const status = normalizeSingleStatusLabel(signal?.status);
-      if (!status) {
-        return null;
-      }
-
-      const fallbackStart = stages.findIndex((item) => item.key === "departure");
-      const fallbackEnd = stages.findIndex((item) => item.key === "arrival");
-      const clearanceTime = normalizeMomentText(signal?.momentText);
-      const clearanceMoment = parseMomentValue(clearanceTime);
-      const knownMoments = stages
-        .map((item, index) => ({
-          index,
-          momentText: getStageMomentText(item),
-          moment: parseMomentValue(getStageMomentText(item)),
-        }))
-        .filter((item) => item.moment);
-
-      let startIndex = fallbackStart >= 0 ? fallbackStart : 0;
-      let endIndex = fallbackEnd >= 0 ? fallbackEnd : Math.min(stages.length - 1, startIndex + 1);
-
-      if (clearanceMoment && knownMoments.length >= 2) {
-        let previous = null;
-        let next = null;
-        for (const item of knownMoments) {
-          if (item.moment <= clearanceMoment) {
-            previous = item;
-          }
-          if (item.moment >= clearanceMoment) {
-            next = item;
-            break;
-          }
-        }
-        if (!previous) {
-          previous = knownMoments[0];
-          next = knownMoments[1] || next;
-        } else if (!next) {
-          next = knownMoments[knownMoments.length - 1];
-          previous = knownMoments[knownMoments.length - 2] || previous;
-        } else if (previous.index === next.index) {
-          next = knownMoments.find((item) => item.index > previous.index) || next;
-          if (previous.index === next.index) {
-            previous = [...knownMoments].reverse().find((item) => item.index < next.index) || previous;
-          }
-        }
-        if (previous && next && previous.index !== next.index) {
-          startIndex = Math.min(previous.index, next.index);
-          endIndex = Math.max(previous.index, next.index);
-        }
-      }
-
-      if (startIndex === endIndex) {
-        endIndex = Math.min(stages.length - 1, startIndex + 1);
-      }
-
-      return {
-        status,
-        timeLabel: formatMomentLabel(clearanceTime),
-        startIndex,
-        endIndex,
-      };
-    }
-
-    function buildClearanceMarkers(schedule, stages) {
-      const rawSignals = Array.isArray(schedule.importClearanceSignals)
-        ? schedule.importClearanceSignals
-        : [];
-      const markers = rawSignals
-        .map((signal) => buildClearanceMarker(signal, stages))
-        .filter(Boolean)
-        .sort((a, b) => a.startIndex - b.startIndex || a.endIndex - b.endIndex || a.status.localeCompare(b.status));
-
-      if (markers.length >= 2) {
-        const heldMarker = markers.find((item) => item.status === "held");
-        const cleanMarker = markers.find((item) => item.status === "clean");
-        if (
-          heldMarker &&
-          cleanMarker &&
-          heldMarker.startIndex === cleanMarker.startIndex &&
-          heldMarker.endIndex === cleanMarker.endIndex
-        ) {
-          const nextStart = Math.min(stages.length - 2, cleanMarker.startIndex + 1);
-          const nextEnd = Math.min(stages.length - 1, cleanMarker.endIndex + 1);
-          if (nextStart < nextEnd) {
-            cleanMarker.startIndex = nextStart;
-            cleanMarker.endIndex = nextEnd;
-          }
-        }
-      }
-
-      return markers;
-    }
-
-    function getSegmentTone(labelPart) {
-      const text = String(labelPart || "").trim().toLowerCase();
-      if (!text) {
-        return "";
-      }
-      if (text.includes("未报关") || text.includes("未放行") || text.includes("held")) {
-        return "is-negative";
-      }
-      if (text.includes("已报关") || text.includes("已放行") || text.includes("clean")) {
-        return "is-positive";
-      }
-      if (text.includes("清关中")) {
-        return "is-warning";
-      }
-      return "";
-    }
-
-    function renderSegmentToneHtml(text) {
-      const value = String(text || "").trim();
-      if (!value) {
-        return "&nbsp;";
-      }
-      return `<span class="schedule-segment-tone ${getSegmentTone(value)}">${escapeHtml(value)}</span>`;
-    }
-
-    function splitSegmentLabel(label) {
-      const parts = String(label || "").split("/").map((part) => part.trim()).filter(Boolean);
-      if (!parts.length) {
-        return { top: "", bottom: "" };
-      }
-      if (parts.length === 1) {
-        return { top: parts[0], bottom: "" };
-      }
-      return {
-        top: parts[0],
-        bottom: parts.slice(1).join(" / ")
-      };
-    }
-
-    function openChatPanel() {
-      chatPanel.classList.add("is-open");
-      chatPanel.setAttribute("aria-hidden", "false");
-      chatFab.style.display = "none";
-      window.setTimeout(() => chatInput.focus(), 50);
-    }
-
-    function closeChatPanel() {
-      chatPanel.classList.remove("is-open");
-      chatPanel.setAttribute("aria-hidden", "true");
-      chatFab.style.display = "flex";
-    }
-
-    function appendChatMessage(role, text) {
-      const message = document.createElement("div");
-      message.className = `chat-message ${role}`;
-      message.textContent = String(text || "").trim();
-      chatBody.appendChild(message);
-      chatBody.scrollTop = chatBody.scrollHeight;
-      return message;
-    }
-
-    async function handleChatSubmit(event) {
-      event.preventDefault();
-      const message = chatInput.value.trim();
-      if (!message) {
-        return;
-      }
-
-      appendChatMessage("user", message);
-      chatInput.value = "";
-      chatSend.disabled = true;
-      chatInput.disabled = true;
-      const loadingMessage = appendChatMessage("status", "正在回复...");
-
-      try {
-        const response = await fetch(CHAT_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ message })
-        });
-        const rawBody = await response.text();
-        let payload = null;
-        try {
-          payload = rawBody ? JSON.parse(rawBody) : {};
-        } catch (_error) {
-          throw new Error("AI 服务返回了无效内容，请稍后重试。");
-        }
-        if (!response.ok || !payload.ok) {
-          throw new Error(payload?.error?.message || `AI 服务异常 (${response.status})`);
-        }
-        loadingMessage.remove();
-        appendChatMessage("bot", payload.replyText || "暂时没有拿到回复，请稍后再试。");
-      } catch (error) {
-        loadingMessage.remove();
-        appendChatMessage("error", error.message || "AI 服务短暂波动，请稍后重试。");
-      } finally {
-        chatSend.disabled = false;
-        chatInput.disabled = false;
-        chatInput.focus();
-      }
-    }
-
-    function renderSchedule(payload) {
-      const schedule = buildScheduleView(payload);
-      if (!schedule.hasAnyDate) {
-        hideSchedule();
-        return;
-      }
-
-      const stages = schedule.stages.map((item) => ({
-        ...item,
-        done: isScheduleStageDone(item)
-      }));
-      const segments = SCHEDULE_SEGMENTS.map((segment) => {
-        const toStageIndex = stages.findIndex((item) => item.key === segment.to);
-        const label = segment.statusKey === "customsStatus"
-          ? (schedule.customsStatus || segment.defaultLabel)
-          : segment.statusKey === "voyageStatus"
-            ? (schedule.voyageStatus || segment.defaultLabel)
-            : segment.defaultLabel;
-        return {
-          ...segment,
-          label,
-          parts: splitSegmentLabel(label),
-          done: toStageIndex >= 0 ? stages[toStageIndex].done : false
-        };
-      });
-      const clearanceMarkers = buildClearanceMarkers(schedule, stages);
-
-      scheduleBoard.innerHTML = `
-        ${segments.map((segment, index) => `
-          <div class="schedule-segment ${segment.done ? "is-done" : ""}" style="grid-column:${index + 2} / span 2; grid-row:1;">
-            <div class="schedule-segment-top">${renderSegmentToneHtml(segment.parts.top)}</div>
-            <div class="schedule-segment-line"></div>
-            <div class="schedule-segment-bottom">${renderSegmentToneHtml(segment.parts.bottom)}</div>
-          </div>
-        `).join("")}
-        ${clearanceMarkers.map((clearanceMarker) => `
-          <div class="schedule-clearance-marker" style="grid-column:${clearanceMarker.startIndex + 2} / ${clearanceMarker.endIndex + 3}; grid-row:1;">
-            <div class="schedule-clearance-top">${renderSegmentToneHtml(clearanceMarker.status)}</div>
-            <div class="schedule-clearance-bottom">${clearanceMarker.timeLabel ? escapeHtml(clearanceMarker.timeLabel) : "&nbsp;"}</div>
-          </div>
-        `).join("")}
-        ${stages.map((item, index) => `
-          <div class="schedule-stage ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:1;">
-            <div class="schedule-stage-card">
-              <div class="schedule-stage-icon">${item.icon}</div>
-            </div>
-            <div class="schedule-stage-label">${escapeHtml(item.label)}</div>
-          </div>
-        `).join("")}
-        <div class="schedule-row-title" style="grid-column:1; grid-row:2;">计划时间</div>
-          ${stages.map((item, index) => `
-            <div class="schedule-time-cell ${item.done ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:2;">
-              ${item.plannedDate ? escapeHtml(formatDisplayDate(item.plannedDate)) : '<span class="schedule-missing">待更新</span>'}
-            </div>
-          `).join("")}
-        <div class="schedule-row-title" style="grid-column:1; grid-row:3;">实际时间</div>
-          ${stages.map((item, index) => `
-            <div class="schedule-time-cell ${item.actualDate ? "is-done" : ""}" style="grid-column:${index + 2}; grid-row:3;">
-              ${item.actualDate ? escapeHtml(formatDisplayDate(item.actualDate)) : '<span class="schedule-missing">待更新</span>'}
-            </div>
-          `).join("")}
-      `;
-      scheduleSection.style.display = "block";
-    }
-
-    async function requestTrackPayload(putCode) {
-      const response = await fetch(TRACK_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ putCode })
-      });
-      const rawBody = await response.text();
-      let payload = null;
-      try {
-        payload = rawBody ? JSON.parse(rawBody) : {};
-      } catch (_error) {
-        throw new Error("查询接口返回了页面内容，请检查 api.ai-express.cn 的 HTTPS 与 /api/track 配置");
-      }
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload?.error?.message || payload?.error || `查询失败 (${response.status})`);
-      }
-      return payload;
-    }
-
-    function shouldAutoPollTrack(payload) {
-      return payload?.pendingRefresh === true;
-    }
-
-    async function fetchTrackPayloadWithAutoPoll(putCode) {
-      let payload = await requestTrackPayload(putCode);
-      if (!shouldAutoPollTrack(payload)) {
-        return payload;
-      }
-
-      for (let attempt = 1; attempt <= TRACK_AUTO_POLL_MAX_ATTEMPTS; attempt += 1) {
-        setLoadingMessage(`官网轨迹正在后台刷新，正在自动获取第 ${attempt}/${TRACK_AUTO_POLL_MAX_ATTEMPTS} 次结果，请稍候...`);
-        await new Promise((resolve) => window.setTimeout(resolve, TRACK_AUTO_POLL_INTERVAL_MS));
-        payload = await requestTrackPayload(putCode);
-        if (!shouldAutoPollTrack(payload)) {
-          return payload;
-        }
-      }
-
-      return payload;
-    }
-
-    async function handleSearch() {
-      const putCode = searchBox.value.trim().toUpperCase();
-      if (!putCode) {
-        showError("请输入入仓号");
-        return;
-      }
-
-      updateUrlWithPutCode(putCode);
-      clearError();
-      resetLoadingMessage();
-      setLoading(true);
-      resultContainer.style.display = "none";
-      hideSchedule();
-      trackList.innerHTML = "";
-      resSummary.textContent = "";
-
-      try {
-        const payload = await fetchTrackPayloadWithAutoPoll(putCode);
-
-        resTitle.textContent = `${payload.putCode} 轨迹结果`;
-        const timeline = Array.isArray(payload.timeline) ? payload.timeline : [];
-        resSummary.textContent = timeline.length ? `共 ${timeline.length} 条轨迹` : "已返回原始结果";
-        renderSchedule(payload);
-        renderTimeline(payload.replyText, timeline);
-        resultContainer.style.display = "grid";
-      } catch (error) {
-        hideSchedule();
-        showError(error.message || "连接腾讯云查询服务失败");
-      } finally {
-        resetLoadingMessage();
-        setLoading(false);
-      }
-    }
-
-    initializeSearchFromLocation();
-  </script>
-</body>
-</html>
-
+  
